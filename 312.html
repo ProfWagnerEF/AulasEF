@@ -1,1 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xadrez — Questões Complementares</title>
+<style>
+  :root{
+    --dark:#1a1a2e;
+    --wine:#5c2a2a;
+    --cream:#f7f3ec;
+    --gold:#b8860b;
+    --line:#ddd4c0;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Georgia','Times New Roman',serif;
+    background:var(--cream);
+    color:#222;
+    line-height:1.5;
+  }
+  header{
+    background:repeating-linear-gradient(45deg,var(--dark) 0 25px, #16213e 25px 50px);
+    color:#f7f3ec;
+    padding:28px 20px;
+    text-align:center;
+    border-bottom:6px solid var(--gold);
+  }
+  header h1{
+    margin:0 0 6px;
+    font-size:1.9rem;
+    letter-spacing:1px;
+  }
+  header p{
+    margin:2px 0;
+    font-size:0.95rem;
+    opacity:0.9;
+  }
+  .meta{
+    max-width:800px;
+    margin:0 auto;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:6px 24px;
+    font-size:0.9rem;
+    padding:14px 20px 0;
+    color:#555;
+  }
+  .fill-line{
+    border-bottom:1px solid #999;
+    display:inline-block;
+    min-width:220px;
+  }
+  main{
+    max-width:850px;
+    margin:0 auto;
+    padding:10px 20px 60px;
+  }
+  .block-title{
+    background:var(--wine);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:6px 6px 0 0;
+    margin:40px 0 0;
+    font-size:1.2rem;
+  }
+  .block-sub{
+    font-style:italic;
+    background:#fff;
+    border:1px solid var(--line);
+    border-top:none;
+    padding:10px 18px;
+    font-size:0.92rem;
+    color:#555;
+  }
+  .questions{
+    background:#fff;
+    border:1px solid var(--line);
+    border-top:none;
+    border-radius:0 0 6px 6px;
+    padding:6px 18px 18px;
+  }
+  .q{
+    padding:16px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .q:last-child{border-bottom:none;}
+  .q-num{
+    font-weight:bold;
+    color:var(--wine);
+    margin-right:6px;
+  }
+  .q-text{
+    font-size:1.02rem;
+  }
+  .options{
+    list-style:none;
+    margin:10px 0 0;
+    padding:0;
+  }
+  .options li{
+    padding:4px 0 4px 4px;
+  }
+  .options li b{
+    color:var(--gold);
+    margin-right:6px;
+  }
+  .vf-box{
+    display:inline-block;
+    border:1px solid #999;
+    width:26px;
+    height:22px;
+    text-align:center;
+    margin-right:8px;
+    vertical-align:middle;
+  }
+  .answer-lines{
+    margin-top:12px;
+  }
+  .answer-lines div{
+    border-bottom:1px solid #bbb;
+    height:26px;
+  }
+  .challenge{
+    background:#fdf6e3;
+    border-left:4px solid var(--gold);
+  }
+  .quote{
+    text-align:center;
+    font-style:italic;
+    font-size:1.15rem;
+    color:var(--wine);
+    margin:50px 0 10px;
+    padding:20px;
+    border-top:2px solid var(--gold);
+    border-bottom:2px solid var(--gold);
+  }
+  footer{
+    text-align:center;
+    font-size:0.85rem;
+    color:#777;
+    padding-bottom:30px;
+  }
+  @media print{
+    header{background:#1a1a2e !important; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+    .block-title{-webkit-print-color-adjust:exact; print-color-adjust:exact;}
+  }
+</style>
+</head>
+<body>
 
+<header>
+  <h1>♟ Xadrez — Questões Complementares</h1>
+  <p>EEEB Abramo Pezzi</p>
+  <p>Prof. Wagner José Cainelli Vedovelli — Educação Física</p>
+</header>
+
+<div class="meta">
+  <span>Nome: <span class="fill-line">&nbsp;</span></span>
+  <span>Turma: <span class="fill-line" style="min-width:100px;">&nbsp;</span></span>
+  <span>Data: <span class="fill-line" style="min-width:100px;">&nbsp;</span></span>
+</div>
+
+<main>
+
+  <!-- BLOCO INICIAL: Questões abertas gerais -->
+  <div class="block-title">Questões Gerais</div>
+  <div class="questions">
+
+    <div class="q"><span class="q-num">1.</span><span class="q-text">Qual é o principal objetivo do jogo de xadrez?</span></div>
+    <div class="q"><span class="q-num">2.</span><span class="q-text">Em qual país o xadrez se originou, por volta do século VI d.C.?</span></div>
+    <div class="q"><span class="q-num">3.</span><span class="q-text">Como é chamado o movimento em que o rei e uma torre se movem simultaneamente?</span></div>
+    <div class="q"><span class="q-num">4.</span><span class="q-text">Qual peça do xadrez realiza o movimento em forma de "L" no tabuleiro?</span></div>
+    <div class="q"><span class="q-num">5.</span><span class="q-text">O que é o "afogamento" (stalemate) no xadrez?</span></div>
+    <div class="q"><span class="q-num">6.</span><span class="q-text">Quantas casas possui o tabuleiro de xadrez?</span></div>
+    <div class="q"><span class="q-num">7.</span><span class="q-text">O que ocorre quando um peão alcança a última fileira do tabuleiro adversário?</span></div>
+    <div class="q"><span class="q-num">8.</span><span class="q-text">Quais as três fases de uma partida de xadrez?</span></div>
+    <div class="q"><span class="q-num">9.</span><span class="q-text">Qual é a peça mais poderosa do xadrez, capaz de se mover em qualquer direção e qualquer número de casas?</span></div>
+    <div class="q"><span class="q-num">10.</span><span class="q-text">Na tática chamada "garfo" (fork), o que ocorre?</span></div>
+
+    <div class="q">
+      <span class="q-num">11.</span>
+      <span class="q-text">Explique, com suas próprias palavras, o que é o xeque-mate e como ele se diferencia de um simples xeque.</span>
+      <div class="answer-lines"><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">12.</span>
+      <span class="q-text">Cite e explique pelo menos três habilidades cognitivas ou socioemocionais que a prática do xadrez pode desenvolver nos estudantes.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">13.</span>
+      <span class="q-text">Compare as origens históricas do xadrez com a forma como o jogo chegou ao Brasil. O que mudou e o que permaneceu?</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q challenge">
+      <span class="q-num">14. (Desafio)</span>
+      <span class="q-text">Imagine que você precisa ensinar xadrez a um colega que nunca jogou. Descreva, em um pequeno parágrafo, como você apresentaria o objetivo do jogo, o tabuleiro e pelo menos duas peças, de forma clara e didática.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+  </div>
+
+  <!-- BLOCO A: Múltipla Escolha -->
+  <div class="block-title">Bloco A — Questões de Múltipla Escolha</div>
+  <div class="questions">
+
+    <div class="q">
+      <span class="q-num">15.</span><span class="q-text">Qual foi o primeiro Campeão Mundial oficial de Xadrez, em 1886?</span>
+      <ul class="options">
+        <li><b>a)</b> Garry Kasparov</li>
+        <li><b>b)</b> Wilhelm Steinitz</li>
+        <li><b>c)</b> Bobby Fischer</li>
+        <li><b>d)</b> Anatoly Karpov</li>
+        <li><b>e)</b> Emanuel Lasker</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">16.</span><span class="q-text">O órgão internacional responsável por organizar o circuito mundial de xadrez e conceder títulos como Mestre Internacional e Grande Mestre é:</span>
+      <ul class="options">
+        <li><b>a)</b> CBX — Confederação Brasileira de Xadrez</li>
+        <li><b>b)</b> COI — Comitê Olímpico Internacional</li>
+        <li><b>c)</b> FIDE — Federação Internacional de Xadrez</li>
+        <li><b>d)</b> FIFA — Federação Internacional de Futebol</li>
+        <li><b>e)</b> UNESCO — Organização das Nações Unidas para a Educação</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">17.</span><span class="q-text">O peão pode capturar peças adversárias de que forma?</span>
+      <ul class="options">
+        <li><b>a)</b> Avançando diretamente uma casa à frente</li>
+        <li><b>b)</b> Na diagonal, para frente</li>
+        <li><b>c)</b> Em qualquer direção, como o rei</li>
+        <li><b>d)</b> Realizando o movimento em L</li>
+        <li><b>e)</b> Somente quando está na última fileira</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">18.</span><span class="q-text">Quando um peão chega à última fileira do tabuleiro adversário e é promovido, qual é a peça mais vantajosa escolher na maioria das situações?</span>
+      <ul class="options">
+        <li><b>a)</b> Cavalo, pela mobilidade em L</li>
+        <li><b>b)</b> Torre, pela força em finais</li>
+        <li><b>c)</b> Rainha, por ser a peça mais poderosa</li>
+        <li><b>d)</b> Bispo, pela mobilidade diagonal</li>
+        <li><b>e)</b> Outro peão, para ter mais unidades</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">19.</span><span class="q-text">O movimento "en passant" (ao passar) ocorre em qual situação específica?</span>
+      <ul class="options">
+        <li><b>a)</b> Quando um bispo ultrapassa uma peça adversária</li>
+        <li><b>b)</b> Quando um peão adversário avança duas casas e para ao lado do seu peão, permitindo capturá-lo</li>
+        <li><b>c)</b> Quando o rei avança duas casas durante o roque</li>
+        <li><b>d)</b> Quando a rainha captura uma peça sem se mover</li>
+        <li><b>e)</b> Quando duas torres se encontram na mesma coluna</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">20.</span><span class="q-text">Qual das afirmações abaixo descreve corretamente o movimento do bispo?</span>
+      <ul class="options">
+        <li><b>a)</b> Move-se qualquer número de casas na horizontal ou vertical</li>
+        <li><b>b)</b> Move-se em L (duas casas em uma direção e uma perpendicular)</li>
+        <li><b>c)</b> Move-se qualquer número de casas na diagonal</li>
+        <li><b>d)</b> Move-se apenas uma casa em qualquer direção</li>
+        <li><b>e)</b> Move-se qualquer número de casas em qualquer direção</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">21.</span><span class="q-text">De acordo com o material, quais são as quatro casas consideradas o "centro" do tabuleiro de xadrez, cuja disputa é prioritária nas aberturas?</span>
+      <ul class="options">
+        <li><b>a)</b> a1, a8, h1, h8</li>
+        <li><b>b)</b> a4, a5, h4, h5</li>
+        <li><b>c)</b> e4, e5, d4, d5</li>
+        <li><b>d)</b> c3, c6, f3, f6</li>
+        <li><b>e)</b> b2, b7, g2, g7</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">22.</span><span class="q-text">A tática chamada "espeto" (pin) consiste em:</span>
+      <ul class="options">
+        <li><b>a)</b> Uma peça atacar simultaneamente duas peças adversárias</li>
+        <li><b>b)</b> Uma peça ser atacada e não poder se mover sem expor uma peça mais valiosa atrás dela</li>
+        <li><b>c)</b> A peça mais valiosa estar na frente e ser forçada a se mover</li>
+        <li><b>d)</b> Dois ataques serem realizados com um único movimento</li>
+        <li><b>e)</b> O rei ficar sem nenhuma jogada legal disponível</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">23.</span><span class="q-text">Quantas peças cada jogador possui no início de uma partida de xadrez?</span>
+      <ul class="options">
+        <li><b>a)</b> 8 peças</li>
+        <li><b>b)</b> 12 peças</li>
+        <li><b>c)</b> 14 peças</li>
+        <li><b>d)</b> 16 peças</li>
+        <li><b>e)</b> 20 peças</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">24.</span><span class="q-text">O xadrez foi originalmente chamado de "chaturanga" na Índia. O que essa palavra significa em sânscrito?</span>
+      <ul class="options">
+        <li><b>a)</b> Rei eterno</li>
+        <li><b>b)</b> Quatro divisões</li>
+        <li><b>c)</b> Jogo da guerra</li>
+        <li><b>d)</b> Arte da estratégia</li>
+        <li><b>e)</b> Tabuleiro sagrado</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">25.</span><span class="q-text">Qual das situações abaixo NÃO resulta em empate (remis) no xadrez?</span>
+      <ul class="options">
+        <li><b>a)</b> Afogamento (stalemate)</li>
+        <li><b>b)</b> Repetição da mesma posição três vezes</li>
+        <li><b>c)</b> Regra dos 50 movimentos</li>
+        <li><b>d)</b> Acordo mútuo entre os jogadores</li>
+        <li><b>e)</b> O rei estar em xeque sem poder escapar</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">26.</span><span class="q-text">Segundo o material, estudantes que praticam xadrez regularmente apresentam melhora significativa especialmente em quais disciplinas escolares?</span>
+      <ul class="options">
+        <li><b>a)</b> História, Geografia e Artes</li>
+        <li><b>b)</b> Educação Física, Música e Teatro</li>
+        <li><b>c)</b> Matemática, Leitura e Ciências</li>
+        <li><b>d)</b> Química, Biologia e Filosofia</li>
+        <li><b>e)</b> Inglês, Espanhol e Literatura</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">27.</span><span class="q-text">Durante o roque, qual é a condição necessária para que o movimento possa ser realizado?</span>
+      <ul class="options">
+        <li><b>a)</b> O rei precisa estar em xeque</li>
+        <li><b>b)</b> Nenhuma peça pode estar entre o rei e a torre, e ambos não podem ter se movido</li>
+        <li><b>c)</b> A rainha adversária precisa estar fora do tabuleiro</li>
+        <li><b>d)</b> O rei precisa ter se movido ao menos uma vez</li>
+        <li><b>e)</b> O roque só pode ser feito no lado da rainha</li>
+      </ul>
+    </div>
+
+    <div class="q">
+      <span class="q-num">28.</span><span class="q-text">Qual princípio estratégico recomenda que, durante a abertura, cavalos e bispos devem ser desenvolvidos antes da rainha e das torres?</span>
+      <ul class="options">
+        <li><b>a)</b> Controle do centro</li>
+        <li><b>b)</b> Segurança do rei</li>
+        <li><b>c)</b> Coordenação das peças</li>
+        <li><b>d)</b> Desenvolvimento das peças</li>
+        <li><b>e)</b> Não mover a mesma peça duas vezes</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- BLOCO B: Verdadeiro ou Falso -->
+  <div class="block-title">Bloco B — Verdadeiro ou Falso</div>
+  <div class="block-sub">Julgue as afirmações a seguir como Verdadeiro (V) ou Falso (F), justificando brevemente as afirmativas falsas.</div>
+  <div class="questions">
+
+    <div class="q">
+      <span class="vf-box"></span><span class="q-num">29.</span>
+      <span class="q-text">O tabuleiro de xadrez possui 64 casas dispostas em 8 fileiras e 8 colunas.</span>
+    </div>
+
+    <div class="q">
+      <span class="vf-box"></span><span class="q-num">30.</span>
+      <span class="q-text">O rei é a peça mais poderosa do xadrez, podendo mover-se qualquer número de casas em qualquer direção.</span>
+      <div class="answer-lines"><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="vf-box"></span><span class="q-num">31.</span>
+      <span class="q-text">O cavalo é a única peça do xadrez que pode saltar sobre outras peças.</span>
+    </div>
+
+    <div class="q">
+      <span class="vf-box"></span><span class="q-num">32.</span>
+      <span class="q-text">No início de uma partida, as brancas sempre jogam primeiro.</span>
+    </div>
+
+    <div class="q">
+      <span class="vf-box"></span><span class="q-num">33.</span>
+      <span class="q-text">O xadrez foi reconhecido pela UNESCO como patrimônio cultural da humanidade.</span>
+    </div>
+
+    <div class="q">
+      <span class="vf-box"></span><span class="q-num">34.</span>
+      <span class="q-text">O afogamento (stalemate) ocorre quando o rei está em xeque e não pode escapar.</span>
+      <div class="answer-lines"><div></div></div>
+    </div>
+
+  </div>
+
+  <!-- BLOCO C: Dissertativas -->
+  <div class="block-title">Bloco C — Questões Dissertativas</div>
+  <div class="questions">
+
+    <div class="q">
+      <span class="q-num">35.</span>
+      <span class="q-text">Explique, com suas palavras, a diferença entre uma tática e uma estratégia no xadrez, dando um exemplo de cada.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">36.</span>
+      <span class="q-text">De que forma as origens militares do xadrez (chaturanga) se refletem na estrutura das peças do jogo moderno? Relacione pelo menos três peças com suas origens históricas.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">37.</span>
+      <span class="q-text">O material afirma que o xadrez desenvolve "controle emocional e resiliência". Você concorda? Justifique sua resposta com base em situações que podem ocorrer durante uma partida.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">38.</span>
+      <span class="q-text">Descreva as três fases de uma partida de xadrez (abertura, meio-jogo e final), explicando o objetivo principal de cada uma.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">39.</span>
+      <span class="q-text">Por que o princípio "realize o roque cedo" é considerado importante na estratégia de abertura? Explique os benefícios desse movimento para a segurança do rei.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">40.</span>
+      <span class="q-text">O xadrez é comparado a uma "ferramenta pedagógica". Com base no texto e em sua própria experiência, cite e explique pelo menos quatro habilidades — cognitivas ou socioemocionais — que o jogo pode desenvolver nos estudantes.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+  </div>
+
+  <!-- BLOCO D: Relação e Interdisciplinaridade -->
+  <div class="block-title">Bloco D — Questões de Relação e Interdisciplinaridade</div>
+  <div class="questions">
+
+    <div class="q">
+      <span class="q-num">41.</span>
+      <span class="q-text">O xadrez viajou da Índia para a Pérsia, depois para o mundo árabe e, finalmente, para a Europa. Que fatores históricos e geográficos favoreceram essa difusão do jogo pelo mundo? Apresente sua análise.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">42.</span>
+      <span class="q-text">O sistema de notação algébrica (colunas a–h, fileiras 1–8) permite registrar todas as jogadas de uma partida. De que forma esse sistema se relaciona com conceitos matemáticos de coordenadas? Explique.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q">
+      <span class="q-num">43.</span>
+      <span class="q-text">Analise a frase de Mikhail Botvinnik que abre o material: "O xadrez é a arte de análise." O que você entende por essa afirmação? Você acredita que ela se aplica apenas ao xadrez, ou pode ser estendida a outras áreas do conhecimento? Justifique.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <div class="q challenge">
+      <span class="q-num">44. (Desafio)</span>
+      <span class="q-text">Imagine que você é técnico(a) de uma equipe de xadrez escolar. Elabore um plano de treino semanal de 3 dias para iniciantes, indicando o foco de cada sessão (ex.: peças e movimentos, táticas básicas, partidas comentadas). Justifique suas escolhas pedagógicas.</span>
+      <div class="answer-lines"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    </div>
+
+  </div>
+
+  <div class="quote">"A cada partida perdida, aprendo mais do que em dez vitórias."<br>Bons estudos e boas partidas!</div>
+
+</main>
+
+<footer>
+  Xadrez — Questões Complementares | EEEB Abramo Pezzi | Prof. Wagner José Cainelli Vedovelli
+</footer>
+
+</body>
+</html>
