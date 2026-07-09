@@ -22,13 +22,32 @@
             <div class="table-wrapper">
                 <table class="table">
                     <thead>
-                        <tr><th>Nome</th><th>Ano</th><th>Turno</th><th>Professor</th><th>Ações</th></tr>
+                        <tr><th>Nome</th><th>Ano</th><th>Turno</th><th>Professor</th><th>Alunos</th><th>Ações</th></tr>
                     </thead>
                     <tbody id="tbody"></tbody>
                 </table>
             </div>
         </div>
     </main>
+
+    <div class="modal-overlay" id="modalAlunos">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalAlunosTitle">Alunos</h3>
+                <button class="modal-close" onclick="fecharModalAlunos()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalAlunosBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModalAlunos()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .aluno-item { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); font-size:14px; }
+        .aluno-item:last-child { border-bottom:none; }
+        .aluno-item .num { color:var(--text-muted); min-width:28px; }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -42,11 +61,36 @@
             apiGet('/api/turmas').then(function (data) {
                 var tbody = document.getElementById('tbody');
                 tbody.innerHTML = '';
-                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>Nenhuma turma cadastrada.</p></div></td></tr>'; return; }
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Nenhuma turma cadastrada.</p></div></td></tr>'; return; }
                 data.forEach(function (t) {
-                    tbody.innerHTML += '<tr><td>' + (t.nome || '') + '</td><td>' + (t.ano_escolar || '') + '</td><td>' + (t.turno || '') + '</td><td>' + (t.professor || '') + '</td><td><a href="turma-form.html?id=' + t.id + '" class="btn btn-sm btn-warning">Editar</a> <button class="btn btn-sm btn-danger" onclick="excluir(' + t.id + ')">Excluir</button></td></tr>';
+                    var total = t.total_jogadores || 0;
+                    tbody.innerHTML += '<tr><td>' + (t.nome || '') + '</td><td>' + (t.ano_escolar || '') + '</td><td>' + (t.turno || '') + '</td><td>' + (t.professor || '') + '</td><td>' + total + '</td><td><a href="turma-form.html?id=' + t.id + '" class="btn btn-sm btn-warning">Editar</a> <button class="btn btn-sm btn-secondary" onclick="verAlunos(' + t.id + ', \'' + (t.nome || '') + '\')">Ver Alunos</button> <button class="btn btn-sm btn-danger" onclick="excluir(' + t.id + ')">Excluir</button></td></tr>';
                 });
             });
+        }
+
+        function verAlunos(id, nome) {
+            document.getElementById('modalAlunosTitle').textContent = 'Alunos - ' + nome;
+            document.getElementById('modalAlunosBody').innerHTML = '<div class="loading" style="text-align:center;padding:20px">Carregando...</div>';
+            document.getElementById('modalAlunos').classList.add('active');
+            apiGet('/api/jogadores?turma_id=' + id).then(function (data) {
+                var body = document.getElementById('modalAlunosBody');
+                if (!data || data.length === 0) {
+                    body.innerHTML = '<p style="text-align:center;color:var(--text-muted)">Nenhum aluno nesta turma.</p>';
+                    return;
+                }
+                var html = '';
+                data.forEach(function (j, i) {
+                    html += '<div class="aluno-item"><span class="num">' + (i + 1) + '.</span><span>' + escapeHTML(j.nome_completo || '') + '</span></div>';
+                });
+                body.innerHTML = html;
+            }).catch(function () {
+                document.getElementById('modalAlunosBody').innerHTML = '<p style="text-align:center;color:var(--text-danger)">Erro ao carregar alunos.</p>';
+            });
+        }
+
+        function fecharModalAlunos() {
+            document.getElementById('modalAlunos').classList.remove('active');
         }
 
         function excluir(id) {

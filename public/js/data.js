@@ -17,7 +17,7 @@
     }
     var existing = load('turmas');
     var nomesExistentes = existing.map(function(t) { return t.nome; });
-    var desejadas = ['Turma 102', 'Turma 103', 'Turma 104', 'Turma 105', 'Turma 201', 'Turma 202', 'Turma 204', 'Turma 211', 'Turma 301', 'Turma 302', 'Turma 303', 'Turma 311', 'Turma 312'];
+    var desejadas = ['Turma 101', 'Turma 102', 'Turma 103', 'Turma 104', 'Turma 105', 'Turma 201', 'Turma 202', 'Turma 204', 'Turma 211', 'Turma 301', 'Turma 302', 'Turma 303', 'Turma 311', 'Turma 312'];
     desejadas.forEach(function(nome) {
       if (nomesExistentes.indexOf(nome) === -1) {
         var num = parseInt(nome.split(' ')[1]);
@@ -25,6 +25,19 @@
       }
     });
     save('turmas', existing);
+
+    var jogs = load('jogadores');
+    var nomesSeed = ['Ana Silva', 'Bruno Santos', 'Carla Oliveira', 'Daniel Souza', 'Eduarda Lima', 'Felipe Costa', 'Gabriela Pereira', 'Henrique Martins', 'Isabela Rocha', 'João Almeida', 'Karina Barbosa', 'Lucas Fernandes', 'Mariana Ribeiro', 'Nicolas Carvalho', 'Olivia Gomes', 'Pedro Teixeira', 'Quitéria Dias', 'Rafael Moreira', 'Sofia Campos', 'Thiago Nunes', 'Valentina Azevedo', 'Wagner Correia', 'Yasmin Farias', 'Arthur Monteiro', 'Beatriz Cardoso'];
+    var turmas = load('turmas');
+    turmas.forEach(function(t) {
+      var existentes = jogs.filter(function(j) { return Number(j.turma_id) === Number(t.id); }).length;
+      for (var i = existentes; i < 20; i++) {
+        var nome = nomesSeed[i % nomesSeed.length];
+        if (i >= nomesSeed.length) nome += ' ' + t.id + String.fromCharCode(65 + (i - nomesSeed.length));
+        jogs.push({ id: genId(), nome_completo: nome, turma_id: t.id, ano_nascimento: '', sexo: '', ativo: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+      }
+    });
+    save('jogadores', jogs);
   }
 
   function getUsuarioLogado() {
@@ -64,7 +77,7 @@
         const lista = load('turmas'); const idx = lista.findIndex(t => t.id === id); if (idx === -1) return;
         lista[idx].ativo = 0; lista[idx].updated_at = new Date().toISOString(); save('turmas', lista);
       },
-      contarJogadores(id) { return load('jogadores').filter(j => j.turma_id === id && j.ativo !== 0).length; },
+      contarJogadores(id) { return load('jogadores').filter(j => Number(j.turma_id) === Number(id) && j.ativo !== 0).length; },
       listarComTotal() {
         return this.listar().map(t => ({ ...t, total_jogadores: this.contarJogadores(t.id) }));
       }
@@ -73,31 +86,31 @@
 
   function jogadores() {
     function build(d) {
-      return { id: d.id || genId(), nome_completo: d.nome_completo || d.nome || '', turma_id: d.turma_id || null, ano_nascimento: d.ano_nascimento || null, sexo: d.sexo || '', ativo: d.ativo !== undefined ? d.ativo : 1, created_at: d.created_at || new Date().toISOString(), updated_at: new Date().toISOString() };
+      return { id: d.id || genId(), nome_completo: d.nome_completo || d.nome || '', turma_id: d.turma_id ? parseInt(d.turma_id) : null, ano_nascimento: d.ano_nascimento || null, sexo: d.sexo || '', ativo: d.ativo !== undefined ? d.ativo : 1, created_at: d.created_at || new Date().toISOString(), updated_at: new Date().toISOString() };
     }
     return {
       listar(filtros) {
         let lista = load('jogadores');
         if (filtros) {
           if (filtros.ativo !== undefined) lista = lista.filter(j => j.ativo === filtros.ativo);
-          if (filtros.turma_id) lista = lista.filter(j => j.turma_id === filtros.turma_id);
-          if (filtros.turmas) { const ids = filtros.turmas.split(',').map(Number); lista = lista.filter(j => ids.includes(j.turma_id)); }
+          if (filtros.turma_id) lista = lista.filter(j => Number(j.turma_id) === Number(filtros.turma_id));
+          if (filtros.turmas) { const ids = filtros.turmas.split(',').map(Number); lista = lista.filter(j => ids.includes(Number(j.turma_id))); }
           if (filtros.search) { const s = filtros.search.toLowerCase(); lista = lista.filter(j => j.nome_completo.toLowerCase().includes(s)); }
         }
         const turmas = load('turmas');
-        return lista.map(j => ({ ...j, turma_nome: (turmas.find(t => t.id === j.turma_id) || {}).nome || '' }));
+        return lista.map(j => ({ ...j, turma_nome: (turmas.find(function(t) { return Number(t.id) === Number(j.turma_id); }) || {}).nome || '' }));
       },
       obter(id) {
         const j = load('jogadores').find(x => x.id === id); if (!j) return null;
         const turmas = load('turmas');
-        return { ...j, turma_nome: (turmas.find(t => t.id === j.turma_id) || {}).nome || '' };
+        return { ...j, turma_nome: (turmas.find(function(t) { return Number(t.id) === Number(j.turma_id); }) || {}).nome || '' };
       },
       criar(d) { const lista = load('jogadores'); const item = build(d); lista.push(item); save('jogadores', lista); return item; },
       atualizar(id, d) {
         const lista = load('jogadores'); const idx = lista.findIndex(x => x.id === id); if (idx === -1) return null;
         const item = lista[idx];
         if (d.nome_completo !== undefined) item.nome_completo = d.nome_completo;
-        if (d.turma_id !== undefined) item.turma_id = d.turma_id;
+        if (d.turma_id !== undefined) item.turma_id = parseInt(d.turma_id);
         if (d.ano_nascimento !== undefined) item.ano_nascimento = d.ano_nascimento;
         if (d.sexo !== undefined) item.sexo = d.sexo;
         if (d.ativo !== undefined) item.ativo = d.ativo;
@@ -140,7 +153,7 @@
         const jogs = load('jogadores'); const ts = load('turmas');
         const partDetalhes = participantes.map(p => {
           const j = jogs.find(x => x.id === p.jogador_id) || {};
-          return { ...p, nome_completo: j.nome_completo || '', turma_id: j.turma_id, ano_nascimento: j.ano_nascimento, turma_nome: (ts.find(tm => tm.id === j.turma_id) || {}).nome || '' };
+          return { ...p, nome_completo: j.nome_completo || '', turma_id: j.turma_id, ano_nascimento: j.ano_nascimento, turma_nome: (ts.find(function(tm) { return Number(tm.id) === Number(j.turma_id); }) || {}).nome || '' };
         });
         const classif = calcularClassificacao(id);
         const rodadas = load('rodadas').filter(r => r.torneio_id === id).map(r => ({
@@ -166,7 +179,7 @@
       },
       _autoAddAlunos(torneioId, turmas_ids) {
         if (!turmas_ids.length) return;
-        const alunos = load('jogadores').filter(j => turmas_ids.includes(j.turma_id) && j.ativo !== 0);
+        const alunos = load('jogadores').filter(j => turmas_ids.some(function(tid) { return Number(tid) === Number(j.turma_id); }) && j.ativo !== 0);
         const parts = load('torneio_participantes');
         alunos.forEach(a => { if (!parts.some(p => p.torneio_id === torneioId && p.jogador_id === a.id)) { parts.push({ id: genId(), torneio_id: torneioId, jogador_id: a.id, pontuacao: 0, bye_count: 0, cor_brancas_count: 0, cor_pretas_count: 0, vitorias: 0, empates: 0, derrotas: 0, vitorias_brancas: 0, vitorias_pretas: 0, sequencia_vitorias: 0, sequencia_invicto: 0, max_sequencia_vitorias: 0, max_sequencia_invicto: 0, desistiu: 0, ativo: 1, created_at: new Date().toISOString() }); } });
         save('torneio_participantes', parts);
@@ -208,7 +221,7 @@
         const jogs = load('jogadores'); const ts = load('turmas');
         return parts.map(p => {
           const j = jogs.find(x => x.id === p.jogador_id) || {};
-          return { ...p, nome_completo: j.nome_completo || '', nome: j.nome_completo || '', turma_id: j.turma_id, turma: (ts.find(t => t.id === j.turma_id) || {}).nome || '', turma_nome: (ts.find(t => t.id === j.turma_id) || {}).nome || '' };
+          return { ...p, nome_completo: j.nome_completo || '', nome: j.nome_completo || '', turma_id: j.turma_id, turma: (ts.find(function(t) { return Number(t.id) === Number(j.turma_id); }) || {}).nome || '', turma_nome: (ts.find(function(t) { return Number(t.id) === Number(j.turma_id); }) || {}).nome || '' };
         });
       },
       classificacao(torneioId) { return calcularClassificacao(torneioId); },
@@ -465,7 +478,7 @@
 
     const enriched = participantes.map(p => {
       const j = jogs.find(x => x.id === p.jogador_id) || {};
-      const tm = ts.find(x => x.id === j.turma_id) || {};
+      const tm = ts.find(function(x) { return Number(x.id) === Number(j.turma_id); }) || {};
       return { ...p, nome_completo: j.nome_completo || '', turma_id: j.turma_id, ano_nascimento: j.ano_nascimento, turma_nome: tm.nome || '' };
     });
 
