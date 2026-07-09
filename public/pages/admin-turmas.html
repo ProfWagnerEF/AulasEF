@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turmas - Xadrez Escolar</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Gerenciar Turmas</h1>
+            <a href="turma-form.html" class="btn btn-primary">Nova Turma</a>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr><th>Nome</th><th>Ano</th><th>Turno</th><th>Professor</th><th>Ações</th></tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            verificarAuth();
+            initTheme();
+            initHeader();
+            carregar();
+        });
+
+        function carregar() {
+            apiGet('/api/turmas').then(function (data) {
+                var tbody = document.getElementById('tbody');
+                tbody.innerHTML = '';
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><p>Nenhuma turma cadastrada.</p></div></td></tr>'; return; }
+                data.forEach(function (t) {
+                    tbody.innerHTML += '<tr><td>' + (t.nome || '') + '</td><td>' + (t.ano_escolar || '') + '</td><td>' + (t.turno || '') + '</td><td>' + (t.professor || '') + '</td><td><a href="turma-form.html?id=' + t.id + '" class="btn btn-sm btn-warning">Editar</a> <button class="btn btn-sm btn-danger" onclick="excluir(' + t.id + ')">Excluir</button></td></tr>';
+                });
+            });
+        }
+
+        function excluir(id) {
+            if (!confirm('Excluir turma?')) return;
+            apiDelete('/api/turmas/' + id).then(function () { carregar(); });
+        }
+    </script>
+</body>
+</html>

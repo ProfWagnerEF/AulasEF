@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário Torneio - Xadrez Escolar</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main class="container" style="max-width:700px">
+        <div class="page-header">
+            <h1><a href="admin-torneios.html" style="color:var(--text-primary)">&larr;</a> Torneio</h1>
+        </div>
+
+        <div class="card">
+            <form method="POST" action="/api/torneios/form" id="formTorneio">
+                <input type="hidden" name="_token" id="tokenField" value="">
+                <input type="hidden" name="id" id="idField" value="">
+
+                <div class="form-group">
+                    <label>Nome do Torneio</label>
+                    <input type="text" name="nome" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" name="data" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select name="tipo" class="form-control" required>
+                        <option value="classificatorio">Classificatório (por turma)</option>
+                        <option value="final">Final (entre turmas)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Número de Rodadas</label>
+                    <input type="number" name="num_rodadas" class="form-control" value="5" min="1" max="20" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Turmas participantes</label>
+                    <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px">Selecione as turmas. Alunos dessas turmas serão automaticamente adicionados ao torneio. Você também poderá adicionar alunos individualmente depois.</p>
+                    <div id="turmasContainer" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:8px">
+                        <p style="color:var(--text-muted);font-size:13px;text-align:center">Carregando turmas...</p>
+                    </div>
+                    <p style="font-size:12px;color:var(--text-muted);margin-top:4px" id="contadorAlunos"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Local</label>
+                    <input type="text" name="local" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Observações</label>
+                    <textarea name="observacoes" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-top:20px">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a href="admin-torneios.html" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            verificarAuth();
+            initTheme();
+            initHeader();
+            document.getElementById('tokenField').value = localStorage.getItem('token') || '';
+
+            apiGet('/api/turmas').then(function (turmas) {
+                    var container = document.getElementById('turmasContainer');
+                    container.innerHTML = '';
+                    if (!turmas || turmas.length === 0) {
+                        container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;text-align:center">Nenhuma turma cadastrada.</p>';
+                        return;
+                    }
+                    turmas.forEach(function (t) {
+                        var label = document.createElement('label');
+                        label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer';
+                        label.innerHTML = '<input type="checkbox" name="turmas_ids" value="' + t.id + '" onchange="atualizarContagem()"> <span>' + (t.nome || '') + '</span>';
+                        container.appendChild(label);
+                    });
+                    atualizarContagem();
+
+                    var p = new URLSearchParams(window.location.search);
+                    var id = p.get('id');
+                    if (id) {
+                        document.getElementById('idField').value = id;
+                        document.querySelector('h1').textContent = 'Editar Torneio';
+                        apiGet('/api/torneios/' + id).then(function (data) {
+                                var t = data.torneio || data;
+                                document.querySelector('[name="nome"]').value = t.nome || '';
+                                document.querySelector('[name="data"]').value = t.data || '';
+                                document.querySelector('[name="tipo"]').value = t.tipo || 'classificatorio';
+                                document.querySelector('[name="num_rodadas"]').value = t.num_rodadas || '5';
+                                document.querySelector('[name="local"]').value = t.local || '';
+                                document.querySelector('[name="observacoes"]').value = t.observacoes || '';
+                                if (t.turmas && t.turmas.length) {
+                                    document.querySelectorAll('[name="turmas_ids"]').forEach(function (cb) {
+                                        if (t.turmas.some(function (tu) { return tu.id == cb.value; })) cb.checked = true;
+                                    });
+                                    atualizarContagem();
+                                }
+                            });
+                    }
+                });
+        });
+
+        function atualizarContagem() {
+            var checks = document.querySelectorAll('[name="turmas_ids"]:checked');
+            var ids = Array.from(checks).map(function (c) { return c.value; });
+            var p = document.getElementById('contadorAlunos');
+            if (ids.length === 0) { p.textContent = 'Nenhuma turma selecionada.'; return; }
+            apiGet('/api/jogadores?turmas=' + ids.join(',')).then(function (data) {
+                var total = (data && data.length) || 0;
+                p.textContent = ids.length + ' turma(s) selecionada(s) — ' + total + ' aluno(s) serão adicionados automaticamente.';
+            }).catch(function () { p.textContent = ids.length + ' turma(s) selecionada(s).'; });
+        }
+    </script>
+</body>
+</html>

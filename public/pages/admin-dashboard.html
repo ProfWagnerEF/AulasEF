@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrativo - Xadrez Escolar</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main class="container">
+        <h1>Dashboard Administrativo</h1>
+
+        <section class="stats-grid" id="statsGrid">
+            <div class="stat-card" id="statUsuarios">
+                <h3>Usuários</h3>
+                <p class="stat-value">0</p>
+            </div>
+            <div class="stat-card" id="statTurmas">
+                <h3>Turmas</h3>
+                <p class="stat-value">0</p>
+            </div>
+            <div class="stat-card" id="statJogadores">
+                <h3>Jogadores</h3>
+                <p class="stat-value">0</p>
+            </div>
+            <div class="stat-card" id="statTorneiosAtivos">
+                <h3>Torneios Ativos</h3>
+                <p class="stat-value">0</p>
+            </div>
+            <div class="stat-card" id="statTotalTorneios">
+                <h3>Total Torneios</h3>
+                <p class="stat-value">0</p>
+            </div>
+            <div class="stat-card" id="statTotalPartidas">
+                <h3>Total Partidas</h3>
+                <p class="stat-value">0</p>
+            </div>
+        </section>
+
+        <section class="dashboard-section" id="secaoTorneiosRecentes">
+            <h2>Torneios Recentes</h2>
+            <div class="table-wrapper">
+                <table class="table" id="tabelaTorneios">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                            <th>Participantes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyTorneios"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-section" id="secaoUltimasPartidas">
+            <h2>Últimas Partidas</h2>
+            <div class="table-wrapper">
+                <table class="table" id="tabelaPartidas">
+                    <thead>
+                        <tr>
+                            <th>Torneio</th>
+                            <th>Rodada</th>
+                            <th>Brancas</th>
+                            <th>Pretas</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyPartidas"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-section" id="secaoJogadoresTurma">
+            <h2>Jogadores por Turma</h2>
+            <div class="turma-list" id="listaJogadoresTurma"></div>
+        </section>
+    </main>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            verificarAuth();
+            initTheme();
+            initHeader();
+            carregarDashboard();
+        });
+
+        function carregarDashboard() {
+            API.get('/dashboard')
+                .then(function (data) {
+                    preencherStats(data);
+                    preencherTorneios(data.torneios_recentes);
+                    preencherPartidas(data.ultimas_partidas);
+                    preencherJogadoresTurma(data.jogadores_por_turma);
+                })
+                .catch(function (err) {
+                    console.error('Erro ao carregar dashboard:', err);
+                    mostrarToast('Erro ao carregar dados do dashboard.', 'erro');
+                });
+        }
+
+        function preencherStats(data) {
+            document.querySelector('#statUsuarios .stat-value').textContent = data.total_usuarios || 0;
+            document.querySelector('#statTurmas .stat-value').textContent = data.total_turmas || 0;
+            document.querySelector('#statJogadores .stat-value').textContent = data.total_jogadores || 0;
+            document.querySelector('#statTorneiosAtivos .stat-value').textContent = data.total_torneios_ativos || 0;
+            document.querySelector('#statTotalTorneios .stat-value').textContent = data.total_torneios || 0;
+            document.querySelector('#statTotalPartidas .stat-value').textContent = data.total_partidas || 0;
+        }
+
+        function preencherTorneios(torneios) {
+            var tbody = document.getElementById('tbodyTorneios');
+            tbody.innerHTML = '';
+            if (!torneios || torneios.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">Nenhum torneio encontrado.</td></tr>';
+                return;
+            }
+            torneios.forEach(function (t) {
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + escapeHTML(t.nome) + '</td>' +
+                    '<td>' + formatDate(t.data) + '</td>' +
+                    '<td><span class="status-badge status-' + (t.status || '').toLowerCase() + '">' + escapeHTML(t.status) + '</span></td>' +
+                    '<td>' + (t.participantes || 0) + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        function preencherPartidas(partidas) {
+            var tbody = document.getElementById('tbodyPartidas');
+            tbody.innerHTML = '';
+            if (!partidas || partidas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Nenhuma partida encontrada.</td></tr>';
+                return;
+            }
+            partidas.forEach(function (p) {
+                var tr = document.createElement('tr');
+                tr.innerHTML =
+                    '<td>' + escapeHTML(p.torneio) + '</td>' +
+                    '<td>' + (p.rodada || '-') + '</td>' +
+                    '<td>' + escapeHTML(p.brancas) + '</td>' +
+                    '<td>' + escapeHTML(p.pretas) + '</td>' +
+                    '<td>' + escapeHTML(p.resultado || '-') + '</td>';
+                tbody.appendChild(tr);
+            });
+        }
+
+        function preencherJogadoresTurma(jogadoresPorTurma) {
+            var container = document.getElementById('listaJogadoresTurma');
+            container.innerHTML = '';
+            if (!jogadoresPorTurma || jogadoresPorTurma.length === 0) {
+                container.innerHTML = '<p>Nenhuma turma cadastrada.</p>';
+                return;
+            }
+            jogadoresPorTurma.forEach(function (item) {
+                var div = document.createElement('div');
+                div.className = 'turma-item';
+                div.innerHTML =
+                    '<span class="turma-nome">' + escapeHTML(item.turma) + '</span>' +
+                    '<span class="turma-count">' + item.total + ' jogador(es)</span>';
+                container.appendChild(div);
+            });
+        }
+    </script>
+</body>
+</html>

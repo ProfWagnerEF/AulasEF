@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogadores - Xadrez Escolar</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1>Gerenciar Jogadores</h1>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <a href="jogador-form.html" class="btn btn-primary">Novo Jogador</a>
+            </div>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="busca" class="form-control" placeholder="Buscar..." onkeyup="carregar()">
+            <select id="filtroTurma" class="form-control" onchange="carregar()">
+                <option value="">Todas as turmas</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr><th>Nome</th><th>Turma</th><th>Ano</th><th>Sexo</th><th>Status</th><th>Ações</th></tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            verificarAuth();
+            initTheme();
+            initHeader();
+            carregarTurmas();
+            carregar();
+        });
+
+        function carregarTurmas() {
+            apiGet('/api/turmas').then(function (data) {
+                var fil = document.getElementById('filtroTurma');
+                (data || []).forEach(function (t) { fil.innerHTML += '<option value="' + t.id + '">' + (t.nome || '') + '</option>'; });
+            });
+        }
+
+        function carregar() {
+            var q = '';
+            var b = document.getElementById('busca').value.trim();
+            var f = document.getElementById('filtroTurma').value;
+            if (b) q += '?search=' + encodeURIComponent(b);
+            if (f) q += (q ? '&' : '?') + 'turma_id=' + f;
+            apiGet('/api/jogadores' + q).then(function (data) {
+                var tbody = document.getElementById('tbody');
+                tbody.innerHTML = '';
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Nenhum jogador.</p></div></td></tr>'; return; }
+                data.forEach(function (j) {
+                    tbody.innerHTML += '<tr><td>' + (j.nome_completo || '') + '</td><td>' + (j.turma_nome || '-') + '</td><td>' + (j.ano_nascimento || '-') + '</td><td>' + (j.sexo || '-') + '</td><td>' + (j.ativo ? 'Ativo' : 'Inativo') + '</td><td><a href="jogador-form.html?id=' + j.id + '" class="btn btn-sm btn-warning">Editar</a> <button class="btn btn-sm btn-danger" onclick="excluir(' + j.id + ')">Excluir</button></td></tr>';
+                });
+            });
+        }
+
+        function excluir(id) {
+            if (!confirm('Excluir jogador?')) return;
+            apiDelete('/api/jogadores/' + id).then(function () { carregar(); });
+        }
+    </script>
+</body>
+</html>
