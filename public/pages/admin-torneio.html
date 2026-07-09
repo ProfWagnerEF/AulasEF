@@ -1186,23 +1186,10 @@
             return d.toLocaleDateString('pt-BR');
         }
 
-        function apiGet(url) {
-            return apiRequest('GET', url);
-        }
-
-        function apiPost(url, body) {
-            return apiRequest('POST', url, body);
-        }
-
-        function apiPut(url, body) {
-            return apiRequest('PUT', url, body);
-        }
-
-        function apiDelete(url) {
-            return apiRequest('DELETE', url);
-        }
-
-        function apiRequest(method, url, body) { return window.apiRequest(method, url, body); }
+        function apiGet(url) { return window.apiRequest('GET', url); }
+        function apiPost(url, body) { return window.apiRequest('POST', url, body); }
+        function apiPut(url, body) { return window.apiRequest('PUT', url, body); }
+        function apiDelete(url) { return window.apiRequest('DELETE', url); }
     </script>
 </body>
 </html>

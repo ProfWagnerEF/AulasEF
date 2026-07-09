@@ -15,6 +15,16 @@
         { id: 3, chave: 'classificados_padrao', valor: '2' },
       ]);
     }
+    var existing = load('turmas');
+    var nomesExistentes = existing.map(function(t) { return t.nome; });
+    var desejadas = ['Turma 102', 'Turma 103', 'Turma 104', 'Turma 105', 'Turma 201', 'Turma 202', 'Turma 204', 'Turma 211', 'Turma 301', 'Turma 302', 'Turma 303', 'Turma 311', 'Turma 312'];
+    desejadas.forEach(function(nome) {
+      if (nomesExistentes.indexOf(nome) === -1) {
+        var num = parseInt(nome.split(' ')[1]);
+        existing.push({ id: num, nome: nome, ano_escolar: String(num).slice(0, 1), turno: 'manha', professor: '', ativo: 1, created_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+      }
+    });
+    save('turmas', existing);
   }
 
   function getUsuarioLogado() {

@@ -94,17 +94,17 @@ function initHeader() {
   function navHtml() {
     var h = '';
     if (auth) {
-      h += '<a href="/pages/admin-dashboard.html">Dashboard</a>';
-      h += '<a href="/pages/admin-torneios.html">Torneios</a>';
-      h += '<a href="/pages/admin-jogadores.html">Jogadores</a>';
-      h += '<a href="/pages/admin-turmas.html">Turmas</a>';
-      if (usuario.perfil === 'admin') h += '<a href="/pages/admin-usuarios.html">Usuarios</a>';
-      h += '<a href="/pages/painel-publico.html">Painel</a>';
+      h += '<a href="' + relPath('pages/admin-dashboard.html') + '">Dashboard</a>';
+      h += '<a href="' + relPath('pages/admin-torneios.html') + '">Torneios</a>';
+      h += '<a href="' + relPath('pages/admin-jogadores.html') + '">Jogadores</a>';
+      h += '<a href="' + relPath('pages/admin-turmas.html') + '">Turmas</a>';
+      if (usuario.perfil === 'admin') h += '<a href="' + relPath('pages/admin-usuarios.html') + '">Usuarios</a>';
+      h += '<a href="' + relPath('pages/painel-publico.html') + '">Painel</a>';
       h += '<button onclick="handleLogout()">Sair (' + escapeHTML(usuario.nome) + ')</button>';
     } else {
-      h += '<a href="/">Inicio</a>';
-      h += '<a href="/pages/painel-publico.html">Painel Publico</a>';
-      h += '<a href="/login.html">Entrar</a>';
+      h += '<a href="' + relPath('index.html') + '">Inicio</a>';
+      h += '<a href="' + relPath('pages/painel-publico.html') + '">Painel Publico</a>';
+      h += '<a href="' + relPath('login.html') + '">Entrar</a>';
     }
     h += '<button class="theme-toggle" onclick="toggleTheme()">' + (isDark ? '☀️' : '🌙') + '</button>';
     return h;

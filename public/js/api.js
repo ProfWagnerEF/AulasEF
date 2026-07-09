@@ -48,6 +48,14 @@ function apiPost(path, body) { return apiRequest('POST', path, body); }
 function apiPut(path, body) { return apiRequest('PUT', path, body); }
 function apiDelete(path) { return apiRequest('DELETE', path); }
 
+function resolveRedirect(r) {
+  if (r.indexOf('../') === 0 || r.indexOf('http') === 0) return r;
+  var path = window.location.pathname.replace(/\\/g, '/');
+  var inPages = path.indexOf('/pages/') !== -1;
+  if (inPages) r = r.replace(/^pages\//, '');
+  return r;
+}
+
 document.addEventListener('submit', function(e) {
   var form = e.target;
   var action = form.getAttribute('action') || '';
@@ -68,8 +76,8 @@ document.addEventListener('submit', function(e) {
   var btn = form.querySelector('button[type="submit"]');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
   apiPost(action, data).then(function(r) {
-    if (r && r.redirect) { window.location.href = r.redirect.replace(/^\//, ''); }
-    else { window.location.href = 'pages/admin-dashboard.html?msg=ok'; }
+    if (r && r.redirect) { window.location.href = resolveRedirect(r.redirect); }
+    else { window.location.href = resolveRedirect('pages/admin-dashboard.html?msg=ok'); }
   }).catch(function(err) {
     if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
     var msgEl = document.getElementById('msg');
