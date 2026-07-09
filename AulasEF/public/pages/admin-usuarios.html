@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - Xadrez Escolar</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-logo">
+                <span class="icon">♟</span>
+                <span>Xadrez Escolar</span>
+            </div>
+            <nav class="header-nav"></nav>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 24px; padding-bottom: 24px;">
+        <div class="page-header">
+            <h1>Gerenciar Usuários</h1>
+            <button class="btn btn-primary" onclick="abrirModalUsuario()">Novo Usuário</button>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Perfil</th>
+                        <th>Status</th>
+                        <th>Criado em</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyUsuarios">
+                    <tr>
+                        <td colspan="6" class="loading">Carregando usuários</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalUsuario">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitulo">Novo Usuário</h3>
+                <button class="modal-close" onclick="fecharModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="formUsuario" onsubmit="event.preventDefault(); salvarUsuario();">
+                    <input type="hidden" id="usuarioId">
+                    <div class="form-group">
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" class="form-control" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control" required autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="senha">Senha</label>
+                        <input type="password" id="senha" class="form-control" placeholder="Deixe em branco para manter" autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="perfil">Perfil</label>
+                        <select id="perfil" class="form-control">
+                            <option value="admin">Admin</option>
+                            <option value="moderador">Moderador</option>
+                            <option value="visitante" selected>Visitante</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        var listaUsuarios = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!verificarAuth('admin')) return;
+            initTheme();
+            initHeader();
+            carregarUsuarios();
+        });
+
+        function carregarUsuarios() {
+            var tbody = document.getElementById('tbodyUsuarios');
+            tbody.innerHTML = '<tr><td colspan="6" class="loading">Carregando usuários</td></tr>';
+
+            API.get('/usuarios')
+                .then(function (data) {
+                    listaUsuarios = data.usuarios || data || [];
+                    tbody.innerHTML = '';
+
+                    if (listaUsuarios.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Nenhum usuário encontrado.</p></div></td></tr>';
+                        return;
+                    }
+
+                    listaUsuarios.forEach(function (u) {
+                        var tr = document.createElement('tr');
+                        var ativo = u.ativo !== false;
+                        var statusText = ativo ? 'ativo' : 'inativo';
+                        var acaoTexto = ativo ? 'Desativar' : 'Ativar';
+                        var acaoClasse = ativo ? 'btn-danger' : 'btn-warning';
+
+                        tr.innerHTML =
+                            '<td>' + escapeHTML(u.nome) + '</td>' +
+                            '<td>' + escapeHTML(u.email) + '</td>' +
+                            '<td>' + renderBadge('perfil', u.perfil) + '</td>' +
+                            '<td>' + renderBadge('status', statusText) + '</td>' +
+                            '<td>' + formatDate(u.criadoEm || u.createdAt || u.dataCriacao) + '</td>' +
+                            '<td>' +
+                                '<button class="btn btn-sm btn-secondary" onclick="abrirModalUsuario(\'' + u.id + '\')">Editar</button> ' +
+                                '<button class="btn btn-sm ' + acaoClasse + '" onclick="desativarUsuario(\'' + u.id + '\')">' + acaoTexto + '</button>' +
+                            '</td>';
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(function (err) {
+                    console.error('Erro ao carregar usuários:', err);
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Erro ao carregar usuários.</p></div></td></tr>';
+                    mostrarToast('Erro ao carregar usuários.', 'error');
+                });
+        }
+
+        function abrirModalUsuario(userId) {
+            document.getElementById('formUsuario').reset();
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('senha').required = true;
+            document.getElementById('senha').placeholder = '';
+            document.getElementById('modalTitulo').textContent = 'Novo Usuário';
+
+            if (userId) {
+                var user = listaUsuarios.find(function (u) { return String(u.id) === String(userId); });
+                if (user) {
+                    document.getElementById('usuarioId').value = user.id;
+                    document.getElementById('nome').value = user.nome;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('perfil').value = user.perfil;
+                    document.getElementById('senha').required = false;
+                    document.getElementById('senha').placeholder = 'Deixe em branco para manter';
+                    document.getElementById('senha').value = '';
+                    document.getElementById('modalTitulo').textContent = 'Editar Usuário';
+                }
+            }
+
+            document.getElementById('modalUsuario').classList.add('active');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalUsuario').classList.remove('active');
+        }
+
+        function salvarUsuario() {
+            var nome = document.getElementById('nome').value.trim();
+            var email = document.getElementById('email').value.trim();
+            var senha = document.getElementById('senha').value;
+            var perfil = document.getElementById('perfil').value;
+            var id = document.getElementById('usuarioId').value;
+
+            if (!nome || !email) {
+                mostrarToast('Preencha os campos obrigatórios.', 'error');
+                return;
+            }
+
+            var data = { nome: nome, email: email, perfil: perfil };
+            if (senha) data.senha = senha;
+
+            var request;
+            if (id) {
+                request = API.put('/usuarios/' + id, data);
+            } else {
+                if (!senha) {
+                    mostrarToast('Senha é obrigatória para novos usuários.', 'error');
+                    return;
+                }
+                request = API.post('/usuarios', data);
+            }
+
+            request
+                .then(function () {
+                    mostrarToast('Usuário salvo com sucesso!', 'success');
+                    fecharModal();
+                    carregarUsuarios();
+                })
+                .catch(function (err) {
+                    mostrarToast(err.message || 'Erro ao salvar usuário.', 'error');
+                });
+        }
+
+        function desativarUsuario(id) {
+            var user = listaUsuarios.find(function (u) { return String(u.id) === String(id); });
+            if (!user) return;
+
+            var ativo = user.ativo !== false;
+            var msg = ativo
+                ? 'Tem certeza que deseja desativar o usuário "' + user.nome + '"?'
+                : 'Tem certeza que deseja reativar o usuário "' + user.nome + '"?';
+
+            if (!confirm(msg)) return;
+
+            API.del('/usuarios/' + id)
+                .then(function () {
+                    mostrarToast(ativo ? 'Usuário desativado com sucesso.' : 'Usuário reativado com sucesso.', 'success');
+                    carregarUsuarios();
+                })
+                .catch(function (err) {
+                    mostrarToast(err.message || 'Erro ao alterar status do usuário.', 'error');
+                });
+        }
+    </script>
+</body>
+</html>

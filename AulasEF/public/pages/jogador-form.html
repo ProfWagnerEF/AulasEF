@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário Jogador - Xadrez Escolar</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main class="container" style="max-width:600px">
+        <div class="page-header">
+            <h1><a href="admin-jogadores.html" style="color:var(--text-primary)">&larr;</a> Jogador</h1>
+        </div>
+
+        <div id="msg"></div>
+
+        <div class="card">
+            <form method="POST" action="/api/jogadores/form" id="formJogador">
+                <input type="hidden" name="_token" id="tokenField" value="">
+                <input type="hidden" name="id" id="idField" value="">
+
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" name="nome_completo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Turma</label>
+                    <select name="turma_id" id="turmaSelect" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Data de Nascimento</label>
+                    <input type="date" name="ano_nascimento" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <select name="sexo" class="form-control">
+                        <option value="">Não informado</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-top:20px">
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <a href="admin-jogadores.html" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            verificarAuth();
+            initTheme();
+            initHeader();
+            document.getElementById('tokenField').value = localStorage.getItem('token') || '';
+
+            apiGet('/api/turmas').then(function (data) {
+                    var sel = document.getElementById('turmaSelect');
+                    sel.innerHTML = '<option value="">Selecione...</option>';
+                    (data || []).forEach(function (t) {
+                        sel.innerHTML += '<option value="' + t.id + '">' + (t.nome || '') + '</option>';
+                    });
+                    var p = new URLSearchParams(window.location.search);
+                    var id = p.get('id');
+                    if (id) {
+                        document.getElementById('idField').value = id;
+                        document.querySelector('h1').textContent = 'Editar Jogador';
+                        apiGet('/api/jogadores/' + id).then(function (j) {
+                                document.querySelector('[name="nome_completo"]').value = j.nome_completo || '';
+                                document.querySelector('[name="turma_id"]').value = j.turma_id || '';
+                                document.querySelector('[name="ano_nascimento"]').value = j.ano_nascimento || '';
+                                document.querySelector('[name="sexo"]').value = j.sexo || '';
+                            });
+                    }
+                });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Torneios - Painel Administrativo</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header id="mainHeader"></header>
+    <div class="container">
+        <div class="page-header">
+            <h1>Gerenciar Torneios</h1>
+            <a href="torneio-form.html" class="btn btn-primary">+ Novo Torneio</a>
+        </div>
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table" id="tabela-torneios">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Rodadas</th>
+                            <th>Participantes</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela">
+                        <tr><td colspan="7" class="text-center">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        initTheme();
+        initHeader();
+        verificarAuth();
+        document.addEventListener('DOMContentLoaded', carregarTorneios);
+
+        async function carregarTorneios() {
+            try {
+                var data = await apiGet('/api/torneios');
+                var tbody = document.getElementById('corpo-tabela');
+                if (!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">Nenhum torneio encontrado.</td></tr>'; return; }
+                tbody.innerHTML = data.map(function (t) {
+                    var sc = t.status === 'ativo' ? 'badge-success' : t.status === 'finalizado' ? 'badge-secondary' : 'badge-warning';
+                    var tc = t.tipo === 'final' ? 'badge-info' : 'badge-primary';
+                    return '<tr><td>' + (t.nome || '') + '</td><td>' + (t.data || '') + '</td><td><span class="badge ' + tc + '">' + (t.tipo || '') + '</span></td><td><span class="badge ' + sc + '">' + (t.status || '') + '</span></td><td>' + (t.num_rodadas ?? '-') + '</td><td>' + (t.participantes ?? 0) + '</td><td class="acoes"><a href="admin-torneio.html?id=' + t.id + '" class="btn btn-sm btn-info">Gerenciar</a> <a href="torneio-form.html?id=' + t.id + '" class="btn btn-sm btn-primary">Editar</a> <button class="btn btn-sm btn-danger" onclick="arquivar(' + t.id + ')">Arquivar</button></td></tr>';
+                }).join('');
+            } catch (e) {
+                document.getElementById('corpo-tabela').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Erro ao carregar torneios.</td></tr>';
+            }
+        }
+
+        async function arquivar(id) {
+            if (!confirm('Arquivar torneio?')) return;
+            await apiDelete('/api/torneios/' + id);
+            carregarTorneios();
+        }
+    </script>
+</body>
+</html>

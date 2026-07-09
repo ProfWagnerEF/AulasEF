@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Xadrez Escolar</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-icon">♟</div>
+      <h1>Xadrez Escolar</h1>
+      <p>Faça login para continuar</p>
+    </div>
+
+    <form id="loginForm" autocomplete="on">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
+      </div>
+
+      <div class="form-group">
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" name="senha" placeholder="Sua senha" required autocomplete="current-password">
+      </div>
+
+      <div class="form-group form-checkbox">
+        <label>
+          <input type="checkbox" id="lembrar" name="lembrar">
+          <span>Lembrar senha</span>
+        </label>
+      </div>
+
+      <div id="errorMessage" class="error-message" style="display:none;"></div>
+
+      <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+    </form>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    (function() {
+      if (typeof initTheme === 'function') {
+        initTheme();
+      }
+
+      if (typeof API !== 'undefined' && API.isAutenticado()) {
+        window.location.href = 'pages/admin-dashboard.html';
+        return;
+      }
+
+      const form = document.getElementById('loginForm');
+      const errorMessage = document.getElementById('errorMessage');
+
+      function showError(msg) {
+        errorMessage.textContent = msg;
+        errorMessage.style.display = 'block';
+      }
+
+      function hideError() {
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
+      }
+
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        hideError();
+
+        const email = document.getElementById('email').value.trim();
+        const senha = document.getElementById('senha').value;
+
+        if (!email || !senha) {
+          showError('Preencha todos os campos.');
+          return;
+        }
+
+        const btn = form.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Entrando...';
+
+        try {
+          const resultado = await apiPost('/api/auth/login', { email, senha });
+          if (resultado && resultado.token) {
+            localStorage.setItem('xadrez_token', resultado.token);
+            localStorage.setItem('xadrez_usuario', JSON.stringify(resultado.usuario));
+            const params = new URLSearchParams(window.location.search);
+            let redirect = params.get('redirect') || 'pages/admin-dashboard.html';
+            if (redirect.startsWith('/')) redirect = redirect.slice(1);
+            window.location.href = redirect;
+          } else {
+            showError('Resposta inválida do servidor.');
+          }
+        } catch (err) {
+          const msg = err && err.message ? err.message : (err && err.erro ? err.erro : 'Erro ao fazer login. Verifique suas credenciais.');
+          showError(msg);
+          if (typeof mostrarToast === 'function') {
+            mostrarToast(msg, 'erro');
+          }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Entrar';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

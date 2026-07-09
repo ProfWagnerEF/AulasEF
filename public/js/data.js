@@ -137,13 +137,16 @@
         }));
       },
       listarPublico() {
-        return load('torneios').filter(t => t.status === 'ativo').map(t => {
-          const classificacao = calcularClassificacao(t.id);
-          const rodadas = load('rodadas').filter(r => r.torneio_id === t.id);
-          const rodadaAberta = rodadas.find(r => r.status === 'aberta');
-          return { ...t, classificacao: classificacao.slice(0, 10), rodada_atual: rodadaAberta || null,
-            total_rodadas: rodadas.length, total_partidas: load('partidas').filter(p => rodadas.some(r => r.id === p.rodada_id)).length };
-        });
+        try {
+          return load('torneios').filter(t => t.status === 'ativo').map(t => {
+            var classif;
+            try { classif = calcularClassificacao(t.id); } catch(e) { classif = []; }
+            var rodadas = load('rodadas').filter(function(r) { return r.torneio_id === t.id; });
+            var rodadaAberta = rodadas.find(function(r) { return r.status === 'aberta'; });
+            return { ...t, classificacao: (classif || []).slice(0, 10), rodada_atual: rodadaAberta || null,
+              total_rodadas: rodadas.length, total_partidas: load('partidas').filter(function(p) { return rodadas.some(function(r) { return r.id === p.rodada_id; }); }).length };
+          });
+        } catch(e) { return []; }
       },
       obter(id) {
         const t = load('torneios').find(x => x.id === id); if (!t) return null;

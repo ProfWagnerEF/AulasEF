@@ -124,13 +124,19 @@
     let isLoading = false;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      initTheme();
-      initHeader();
-      initFullscreenBtn();
-      document.getElementById('year').textContent = new Date().getFullYear();
-
-      setupTabs();
-      await loadTournaments();
+      try {
+        initTheme();
+        initHeader();
+        initFullscreenBtn();
+        document.getElementById('year').textContent = new Date().getFullYear();
+        setupTabs();
+        await loadTournaments();
+      } catch(e) {
+        console.error('Erro no painel:', e);
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('empty-message').style.display = 'block';
+        document.getElementById('empty-message').querySelector('p').textContent = 'Erro: ' + e.message;
+      }
     });
 
     function setupTabs() {
@@ -151,12 +157,17 @@
       select.disabled = true;
 
       try {
+        console.log('Carregando torneios publicos...');
+        var todos = (function() { try { return JSON.parse(localStorage.getItem('xadrez_torneios')) || []; } catch(e) { return []; } })();
+        console.log('Todos os torneios no storage:', JSON.stringify(todos));
         const torneios = await API.get('/torneios/publico');
+        console.log('Torneios recebidos (listarPublico):', JSON.stringify(torneios));
+        document.getElementById('loading-message').style.display = 'none';
         select.innerHTML = '<option value="">— Selecione um torneio —</option>';
 
         if (!torneios || torneios.length === 0) {
           select.innerHTML += '<option value="" disabled>Nenhum torneio disponível</option>';
-          showEmpty('Nenhum torneio ativo no momento.');
+          showEmpty('Nenhum torneio ativo no momento. (Verifique se ha torneios com status "ativo")');
           return;
         }
 
@@ -182,6 +193,8 @@
         }
       } catch (err) {
         console.error('Erro ao carregar torneios:', err);
+        console.error('Stack:', err.stack);
+        document.getElementById('loading-message').style.display = 'none';
         select.innerHTML = '<option value="">— Erro ao carregar —</option>';
         mostrarAlerta('Erro ao carregar torneios: ' + err.message, 'danger');
       } finally {

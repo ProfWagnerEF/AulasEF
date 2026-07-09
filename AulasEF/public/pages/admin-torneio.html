@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Torneio</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        .tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            margin-bottom: -2px;
+        }
+        .tab-btn:hover {
+            color: #1a73e8;
+        }
+        .tab-btn.active {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .info-item {
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .info-item label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-item span {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .participante-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: background 0.2s;
+        }
+        .participante-item:hover {
+            background: #f8f9fa;
+        }
+        .participante-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .participante-info .nome {
+            font-weight: 500;
+        }
+        .participante-info .turma {
+            color: #666;
+            font-size: 13px;
+        }
+        .participante-info .pontuacao {
+            font-weight: 600;
+            color: #1a73e8;
+        }
+
+        .classificacao-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .classificacao-table th,
+        .classificacao-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .classificacao-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .classificacao-table tr:hover td {
+            background: #f0f4ff;
+        }
+        .posicao-1 {
+            background: #fff7e0 !important;
+        }
+        .posicao-2 {
+            background: #f0f0f0 !important;
+        }
+        .posicao-3 {
+            background: #fce4d6 !important;
+        }
+        .medal {
+            font-size: 18px;
+        }
+
+        .rodada-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+        .rodada-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .rodada-header:hover {
+            background: #eef1f5;
+        }
+        .rodada-header .rodada-numero {
+            font-weight: 600;
+        }
+        .rodada-header .rodada-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        .rodada-header .rodada-status.aberta {
+            background: #e8f0fe;
+            color: #1a73e8;
+        }
+        .rodada-header .rodada-status.fechada {
+            background: #e6f4ea;
+            color: #137333;
+        }
+        .rodada-body {
+            padding: 16px;
+            display: none;
+        }
+        .rodada-body.open {
+            display: block;
+        }
+
+        .partida-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .partida-row:last-child {
+            border-bottom: none;
+        }
+        .partida-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .partida-mesa {
+            font-weight: 600;
+            color: #666;
+            min-width: 40px;
+        }
+        .partida-jogadores {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .partida-resultado {
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+        }
+        .resultado-btns {
+            display: flex;
+            gap: 4px;
+        }
+        .resultado-btns button {
+            padding: 4px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+        .resultado-btns button:hover {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+        .resultado-btns button.selected {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .stat-card .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .distribuicao-barras {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 200px;
+            padding: 16px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .barra-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .barra {
+            width: 100%;
+            max-width: 40px;
+            background: #1a73e8;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s;
+            min-height: 2px;
+        }
+        .barra-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 6px;
+        }
+        .barra-valor {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px;
+            max-width: 560px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal h2 {
+            margin-top: 0;
+        }
+        .modal .form-group {
+            margin-bottom: 16px;
+        }
+        .modal .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        .modal .form-group input,
+        .modal .form-group select,
+        .modal .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .modal .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .search-box {
+            margin-bottom: 16px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .jogador-lista {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .jogador-lista-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .jogador-lista-item:hover {
+            background: #f0f4ff;
+        }
+        .jogador-lista-item.selected {
+            background: #e8f0fe;
+        }
+        .jogador-lista-item:last-child {
+            border-bottom: none;
+        }
+        .jogador-lista-item input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+        .toast {
+            padding: 14px 20px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 8px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast.success { background: #137333; }
+        .toast.error { background: #c5221f; }
+        .toast.info { background: #1a73e8; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .refresh-btn {
+            float: right;
+        }
+
+        @media (max-width: 768px) {
+            .tabs { gap: 0; }
+            .tab-btn { padding: 10px 14px; font-size: 13px; }
+            .info-grid { grid-template-columns: 1fr; }
+            .stat-cards { grid-template-columns: repeat(2, 1fr); }
+            .partida-row { flex-direction: column; align-items: stretch; }
+            .resultado-btns { justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <header id="mainHeader"></header>
+    <main class="container" style="padding-top: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+            <h1 id="pageTitle" style="margin: 0;">Carregando...</h1>
+            <button class="btn btn-secondary refresh-btn" onclick="carregarTorneio()">Atualizar</button>
+        </div>
+
+        <div class="tabs" id="tabsContainer">
+            <button class="tab-btn active" data-tab="informacoes">Informações</button>
+            <button class="tab-btn" data-tab="participantes">Participantes</button>
+            <button class="tab-btn" data-tab="classificacao">Classificação</button>
+            <button class="tab-btn" data-tab="rodadas">Rodadas</button>
+            <button class="tab-btn" data-tab="estatisticas">Estatísticas</button>
+        </div>
+
+        <div id="tab-informacoes" class="tab-content active">
+            <div id="infoContent">
+                <div class="loading">Carregando informações...</div>
+            </div>
+        </div>
+
+        <div id="tab-participantes" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:16px;">
+                <h2 style="margin:0;">Participantes</h2>
+                <button class="btn btn-primary" onclick="abrirModalAdicionarParticipantes()">+ Adicionar Participantes</button>
+            </div>
+            <div id="participantesContent">
+                <div class="loading">Carregando participantes...</div>
+            </div>
+        </div>
+
+        <div id="tab-classificacao" class="tab-content">
+            <div id="classificacaoContent">
+                <div class="loading">Carregando classificação...</div>
+            </div>
+        </div>
+
+        <div id="tab-rodadas" class="tab-content">
+            <div id="rodadasHeader" style="margin-bottom:12px;display:none">
+                <button class="btn btn-success" onclick="confirmarGerarRodada()">Gerar Próxima Rodada</button>
+            </div>
+            <div id="rodadasContent">
+                <div class="loading">Carregando rodadas...</div>
+            </div>
+        </div>
+
+        <div id="tab-estatisticas" class="tab-content">
+            <div id="estatisticasContent">
+                <div class="loading">Carregando estatísticas...</div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="modalEditarTorneio">
+        <div class="modal">
+            <h2>Editar Torneio</h2>
+            <div class="form-group">
+                <label for="editNome">Nome</label>
+                <input type="text" id="editNome">
+            </div>
+            <div class="form-group">
+                <label for="editData">Data</label>
+                <input type="date" id="editData">
+            </div>
+            <div class="form-group">
+                <label for="editTipo">Tipo</label>
+                <select id="editTipo">
+                    <option value="classificatorio">Classificatório (por turma)</option>
+                    <option value="final">Final</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="editCategoria">Categoria</label>
+                <input type="text" id="editCategoria">
+            </div>
+            <div class="form-group">
+                <label for="editNumRodadas">Número de Rodadas</label>
+                <input type="number" id="editNumRodadas" min="1">
+            </div>
+            <div class="form-group">
+                <label for="editLocal">Local</label>
+                <input type="text" id="editLocal">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="fecharModal('modalEditarTorneio')">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarEdicaoTorneio()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalAdicionarParticipantes">
+        <div class="modal">
+            <h2>Adicionar Participantes</h2>
+
+            <div style="margin-bottom:12px">
+                <label style="font-weight:500;font-size:13px">Adicionar todos de uma turma:</label>
+                <div style="display:flex;gap:8px;margin-top:4px">
+                    <select id="turmaSelect" class="form-control" style="flex:1">
+                        <option value="">Selecione...</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" onclick="adicionarTurma()">Adicionar Turma</button>
+                </div>
+            </div>
+
+            <hr style="margin:12px 0;border:none;border-top:1px solid var(--border)">
+
+            <div class="search-box">
+                <input type="text" id="searchJogadores" placeholder="Buscar jogadores individuais..." oninput="filtrarJogadoresDisponiveis()">
+            </div>
+            <div id="jogadoresDisponiveis" class="jogador-lista">
+                <div class="loading">Carregando jogadores...</div>
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="fecharModal('modalAdicionarParticipantes')">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarAdicionarParticipantes()">Adicionar Selecionados</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/utils.js"></script>
+    <script>
+        let torneioId = null;
+        let torneio = null;
+        let classificacao = null;
+        let jogadoresDisponiveis = [];
+        let selectedJogadores = new Set();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initHeader();
+            verificarAuth();
+            torneioId = getParam('id');
+            if (!torneioId) {
+                mostrarToast('ID do torneio não encontrado.', 'error');
+                return;
+            }
+            carregarTorneio();
+            setupTabs();
+        });
+
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                    const tabId = 'tab-' + this.dataset.tab;
+                    document.getElementById(tabId).classList.add('active');
+                    const tab = this.dataset.tab;
+                    if (tab === 'participantes' && torneio) carregarParticipantes();
+                    if (tab === 'classificacao' && torneio) carregarClassificacao();
+                    if (tab === 'rodadas' && torneio) carregarRodadas();
+                    if (tab === 'estatisticas' && torneio) carregarEstatisticas();
+                });
+            });
+        }
+
+        function carregarTorneio() {
+            mostrarLoading('infoContent');
+            apiGet('/api/torneios/' + torneioId)
+                .then(data => {
+                    torneio = data.torneio || data;
+                    document.getElementById('pageTitle').textContent = torneio.nome;
+                    renderInformacoes();
+                    if (document.querySelector('[data-tab="participantes"]').classList.contains('active')) carregarParticipantes();
+                    if (document.querySelector('[data-tab="classificacao"]').classList.contains('active')) carregarClassificacao();
+                    if (document.querySelector('[data-tab="rodadas"]').classList.contains('active')) carregarRodadas();
+                    if (document.querySelector('[data-tab="estatisticas"]').classList.contains('active')) carregarEstatisticas();
+                })
+                .catch(err => {
+                    document.getElementById('infoContent').innerHTML = '<div class="empty-state">Erro ao carregar torneio: ' + (err.message || 'Erro desconhecido') + '</div>';
+                });
+        }
+
+        function renderInformacoes() {
+            if (!torneio) return;
+            const statusLabels = { 'ativo': 'Ativo', 'finalizado': 'Finalizado', 'arquivado': 'Arquivado' };
+            const html = `
+                <div class="info-grid">
+                    <div class="info-item"><label>Nome</label><span>${escapeHtml(torneio.nome)}</span></div>
+                    <div class="info-item"><label>Data</label><span>${torneio.data ? formatarData(torneio.data) : '-'}</span></div>
+                    <div class="info-item"><label>Tipo</label><span>${escapeHtml(torneio.tipo || '-')}</span></div>
+                    <div class="info-item"><label>Status</label><span>${statusLabels[torneio.status] || torneio.status}</span></div>
+                    <div class="info-item"><label>Categoria</label><span>${escapeHtml(torneio.categoria || '-')}</span></div>
+                    <div class="info-item"><label>Número de Rodadas</label><span>${torneio.num_rodadas || '-'}</span></div>
+                    <div class="info-item"><label>Local</label><span>${escapeHtml(torneio.local || '-')}</span></div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="abrirModalEditarTorneio()">Editar Torneio</button>
+                    ${torneio.status === 'ativo' ? '<button class="btn btn-success" onclick="confirmarGerarRodada()">+1 Rodada</button>' : ''}
+                    ${torneio.status === 'ativo' ? '<button class="btn btn-primary" onclick="confirmarGerarTodasRodadas()">Gerar Todas</button>' : ''}
+                    ${torneio.status === 'ativo' ? '<button class="btn btn-warning" onclick="confirmarFinalizarTorneio()">Finalizar Torneio</button>' : ''}
+                    ${torneio.status !== 'arquivado' ? '<button class="btn btn-secondary" onclick="confirmarArquivarTorneio()">Arquivar</button>' : ''}
+                </div>
+            `;
+            document.getElementById('infoContent').innerHTML = html;
+        }
+
+        function abrirModalEditarTorneio() {
+            if (!torneio) return;
+            document.getElementById('editNome').value = torneio.nome || '';
+            document.getElementById('editData').value = torneio.data || '';
+            document.getElementById('editTipo').value = torneio.tipo || 'classificatorio';
+            document.getElementById('editCategoria').value = torneio.categoria || '';
+            document.getElementById('editNumRodadas').value = torneio.num_rodadas || '';
+            document.getElementById('editLocal').value = torneio.local || '';
+            abrirModal('modalEditarTorneio');
+        }
+
+        function salvarEdicaoTorneio() {
+            const data = {
+                nome: document.getElementById('editNome').value.trim(),
+                data: document.getElementById('editData').value,
+                tipo: document.getElementById('editTipo').value,
+                categoria: document.getElementById('editCategoria').value.trim(),
+                num_rodadas: parseInt(document.getElementById('editNumRodadas').value) || 0,
+                local: document.getElementById('editLocal').value.trim()
+            };
+            if (!data.nome) {
+                mostrarToast('O nome do torneio é obrigatório.', 'error');
+                return;
+            }
+            apiPut('/api/torneios/' + torneioId, data)
+                .then(() => {
+                    mostrarToast('Torneio atualizado com sucesso!', 'success');
+                    fecharModal('modalEditarTorneio');
+                    carregarTorneio();
+                })
+                .catch(err => mostrarToast('Erro ao atualizar: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function confirmarGerarRodada() {
+            if (!confirm('Deseja gerar a próxima rodada?')) return;
+            apiPost('/api/torneios/' + torneioId + '/gerar-rodada', {})
+                .then(() => {
+                    mostrarToast('Rodada gerada com sucesso!', 'success');
+                    carregarTorneio();
+                })
+                .catch(err => mostrarToast('Erro ao gerar rodada: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function confirmarGerarTodasRodadas() {
+            if (!confirm('Gerar TODAS as rodadas do torneio de uma vez?')) return;
+            apiPost('/api/torneios/' + torneioId + '/gerar-todas-rodadas', {})
+                .then(data => {
+                    mostrarToast(data.mensagem || 'Rodadas geradas!', 'success');
+                    carregarTorneio();
+                })
+                .catch(err => mostrarToast('Erro: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function confirmarFinalizarTorneio() {
+            if (!confirm('Deseja finalizar este torneio? Esta ação não pode ser desfeita.')) return;
+            apiPost('/api/torneios/' + torneioId + '/finalizar', {})
+                .then(() => {
+                    mostrarToast('Torneio finalizado com sucesso!', 'success');
+                    carregarTorneio();
+                })
+                .catch(err => mostrarToast('Erro ao finalizar: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function confirmarArquivarTorneio() {
+            if (!confirm('Deseja arquivar este torneio?')) return;
+            apiPost('/api/torneios/' + torneioId + '/arquivar', {})
+                .then(() => {
+                    mostrarToast('Torneio arquivado com sucesso!', 'success');
+                    carregarTorneio();
+                })
+                .catch(err => mostrarToast('Erro ao arquivar: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function carregarParticipantes() {
+            mostrarLoading('participantesContent');
+            apiGet('/api/torneios/' + torneioId + '/participantes')
+                .then(data => {
+                    const participantes = data.participantes || data || [];
+                    if (!participantes.length) {
+                        document.getElementById('participantesContent').innerHTML = '<div class="empty-state">Nenhum participante neste torneio.</div>';
+                        return;
+                    }
+                    let html = '';
+                    participantes.forEach(p => {
+                        html += `
+                            <div class="participante-item">
+                                <div class="participante-info">
+                                    <span class="nome">${escapeHtml(p.nome || p.jogador_nome || 'Desconhecido')}</span>
+                                    <span class="turma">${escapeHtml(p.turma || p.jogador_turma || '')}</span>
+                                    <span class="pontuacao">${p.pontuacao_atual != null ? p.pontuacao_atual + ' pts' : '0 pts'}</span>
+                                </div>
+                                <button class="btn btn-danger btn-sm" onclick="confirmarRemoverParticipante(${p.jogador_id || p.id})">Remover</button>
+                            </div>
+                        `;
+                    });
+                    document.getElementById('participantesContent').innerHTML = html;
+                })
+                .catch(err => {
+                    document.getElementById('participantesContent').innerHTML = '<div class="empty-state">Erro ao carregar participantes.</div>';
+                });
+        }
+
+        function confirmarRemoverParticipante(jogadorId) {
+            if (!confirm('Remover este participante do torneio?')) return;
+            apiDelete('/api/torneios/' + torneioId + '/participantes/' + jogadorId)
+                .then(() => {
+                    mostrarToast('Participante removido.', 'success');
+                    carregarParticipantes();
+                })
+                .catch(err => mostrarToast('Erro ao remover: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function abrirModalAdicionarParticipantes() {
+            selectedJogadores.clear();
+            abrirModal('modalAdicionarParticipantes');
+            document.getElementById('jogadoresDisponiveis').innerHTML = '<div class="loading">Carregando jogadores...</div>';
+            document.getElementById('searchJogadores').value = '';
+            carregarJogadoresDisponiveis();
+            carregarTurmasSelect();
+        }
+
+        function carregarTurmasSelect() {
+            apiGet('/api/turmas').then(function (data) {
+                var sel = document.getElementById('turmaSelect');
+                var turmas = data || [];
+                sel.innerHTML = '<option value="">Selecione uma turma...</option>';
+                turmas.forEach(function (t) { sel.innerHTML += '<option value="' + t.id + '">' + escapeHtml(t.nome || '') + '</option>'; });
+            }).catch(function () {});
+        }
+
+        function adicionarTurma() {
+            var sel = document.getElementById('turmaSelect');
+            var turmaId = sel.value;
+            if (!turmaId) { mostrarToast('Selecione uma turma.', 'error'); return; }
+
+            var alunosDisponiveis = jogadoresDisponiveis.filter(function (j) { return j.turma_id == turmaId; });
+            if (alunosDisponiveis.length === 0) { mostrarToast('Nenhum aluno disponivel desta turma.', 'error'); return; }
+
+            alunosDisponiveis.forEach(function (j) { selectedJogadores.add(j.id); });
+            mostrarToast(alunosDisponiveis.length + ' aluno(s) selecionados da turma.', 'success');
+            renderJogadoresDisponiveis();
+        }
+
+        function carregarJogadoresDisponiveis() {
+            apiGet('/api/jogadores')
+                .then(data => {
+                    const todosJogadores = data.jogadores || data || [];
+                    return apiGet('/api/torneios/' + torneioId + '/participantes').then(partData => {
+                        const participantes = partData.participantes || partData || [];
+                        const partIds = new Set(participantes.map(p => p.jogador_id || p.id));
+                        jogadoresDisponiveis = todosJogadores.filter(j => !partIds.has(j.id));
+                        renderJogadoresDisponiveis();
+                    });
+                })
+                .catch(err => {
+                    document.getElementById('jogadoresDisponiveis').innerHTML = '<div class="empty-state">Erro ao carregar jogadores.</div>';
+                });
+        }
+
+        function renderJogadoresDisponiveis() {
+            const search = document.getElementById('searchJogadores').value.toLowerCase().trim();
+            const filtered = jogadoresDisponiveis.filter(j =>
+                (j.nome_completo || j.nome || '').toLowerCase().includes(search) ||
+                (j.turma_nome || j.turma || '').toLowerCase().includes(search)
+            );
+            if (!filtered.length) {
+                document.getElementById('jogadoresDisponiveis').innerHTML = '<div class="empty-state">Nenhum jogador disponível.</div>';
+                return;
+            }
+            let html = '';
+            filtered.forEach(j => {
+                const checked = selectedJogadores.has(j.id) ? 'checked' : '';
+                const nome = j.nome_completo || j.nome || '?';
+                const turma = j.turma_nome || j.turma || '';
+                html += `
+                    <div class="jogador-lista-item ${checked ? 'selected' : ''}" onclick="toggleJogadorSelecionado(${j.id}, event)">
+                        <input type="checkbox" ${checked}>
+                        <span><strong>${escapeHtml(nome)}</strong> ${turma ? '- ' + escapeHtml(turma) : ''}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('jogadoresDisponiveis').innerHTML = html;
+        }
+
+        function toggleJogadorSelecionado(id, event) {
+            if (event && event.target.tagName === 'INPUT') return;
+            if (selectedJogadores.has(id)) {
+                selectedJogadores.delete(id);
+            } else {
+                selectedJogadores.add(id);
+            }
+            renderJogadoresDisponiveis();
+        }
+
+        function filtrarJogadoresDisponiveis() {
+            renderJogadoresDisponiveis();
+        }
+
+        function confirmarAdicionarParticipantes() {
+            const ids = Array.from(selectedJogadores);
+            if (!ids.length) {
+                mostrarToast('Selecione pelo menos um jogador.', 'error');
+                return;
+            }
+            apiPost('/api/torneios/' + torneioId + '/participantes', { jogadores_ids: ids })
+                .then(() => {
+                    mostrarToast('Participantes adicionados com sucesso!', 'success');
+                    fecharModal('modalAdicionarParticipantes');
+                    carregarParticipantes();
+                })
+                .catch(err => mostrarToast('Erro ao adicionar: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function carregarClassificacao() {
+            mostrarLoading('classificacaoContent');
+            apiGet('/api/torneios/' + torneioId + '/classificacao')
+                .then(data => {
+                    classificacao = data.classificacao || data || [];
+                    renderClassificacao();
+                })
+                .catch(err => {
+                    document.getElementById('classificacaoContent').innerHTML = '<div class="empty-state">Erro ao carregar classificação.</div>';
+                });
+        }
+
+        function renderClassificacao() {
+            if (!classificacao || !classificacao.length) {
+                document.getElementById('classificacaoContent').innerHTML = '<div class="empty-state">Nenhum dado de classificação disponível.</div>';
+                return;
+            }
+            let html = `
+                <div style="overflow-x:auto;">
+                <table class="classificacao-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Jogador</th>
+                            <th>Turma</th>
+                            <th>Pontos</th>
+                            <th>V</th>
+                            <th>E</th>
+                            <th>D</th>
+                            <th>Buchholz</th>
+                            <th>Sonneborn</th>
+                            <th>V.Brancas</th>
+                            <th>V.Pretas</th>
+                            <th>Brancas</th>
+                            <th>Pretas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            classificacao.forEach((c, i) => {
+                const posClass = i === 0 ? 'posicao-1' : i === 1 ? 'posicao-2' : i === 2 ? 'posicao-3' : '';
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+                html += `
+                    <tr class="${posClass}">
+                        <td><span class="medal">${medal}</span> ${i + 1}</td>
+                        <td><strong>${escapeHtml(c.jogador_nome || c.nome || 'Desconhecido')}</strong></td>
+                        <td>${escapeHtml(c.turma || c.jogador_turma || '')}</td>
+                        <td><strong>${c.pontuacao != null ? c.pontuacao : 0}</strong></td>
+                        <td>${c.vitorias || 0}</td>
+                        <td>${c.empates || 0}</td>
+                        <td>${c.derrotas || 0}</td>
+                        <td>${c.buchholz || 0}</td>
+                        <td>${c.sonneborn || 0}</td>
+                        <td>${c.vitorias_brancas || 0}</td>
+                        <td>${c.vitorias_pretas || 0}</td>
+                        <td>${c.cor_brancas || 0}</td>
+                        <td>${c.cor_pretas || 0}</td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table></div>';
+            document.getElementById('classificacaoContent').innerHTML = html;
+        }
+
+        function carregarRodadas() {
+            mostrarLoading('rodadasContent');
+            const podeGerar = torneio && torneio.status === 'ativo';
+            document.getElementById('rodadasHeader').style.display = podeGerar ? 'block' : 'none';
+            apiGet('/api/torneios/' + torneioId + '/rodadas')
+                .then(data => {
+                    const rodadas = data.rodadas || data || [];
+                    renderRodadas(rodadas);
+                })
+                .catch(err => {
+                    document.getElementById('rodadasContent').innerHTML = '<div class="empty-state">Erro ao carregar rodadas.</div>';
+                });
+        }
+
+        function renderRodadas(rodadas) {
+            if (!rodadas.length) {
+                const podeGerar = torneio && torneio.status === 'ativo';
+                const btn = podeGerar ? '<br><br><button class="btn btn-success" onclick="confirmarGerarRodada()">Gerar Primeira Rodada</button>' : '';
+                document.getElementById('rodadasContent').innerHTML = '<div class="empty-state">Nenhuma rodada gerada ainda.' + btn + '</div>';
+                return;
+            }
+            let html = '';
+            rodadas.forEach(r => {
+                const statusClass = r.status === 'aberta' ? 'aberta' : 'fechada';
+                const statusLabel = r.status === 'aberta' ? 'Aberta' : 'Fechada';
+                const partidas = r.partidas || [];
+                let partidasHtml = '';
+                if (partidas.length) {
+                    partidas.forEach(p => {
+                        const btn10 = p.resultado === '1-0' ? 'selected' : '';
+                        const btn01 = p.resultado === '0-1' ? 'selected' : '';
+                        const btn05 = p.resultado === '0.5-0.5' ? 'selected' : '';
+                        partidasHtml += `
+                            <div class="partida-row">
+                                <div class="partida-info">
+                                    <span class="partida-mesa">M${p.mesa || p.numero_mesa || '-'}</span>
+                                    <div class="partida-jogadores">
+                                        <strong>${escapeHtml(p.brancas_nome || p.jogador_brancas_nome || '?')}</strong>
+                                        <span style="color:#999;">vs</span>
+                                        <strong>${escapeHtml(p.pretas_nome || p.jogador_pretas_nome || '?')}</strong>
+                                    </div>
+                                    <span class="partida-resultado">${p.resultado || '-'}</span>
+                                </div>
+                                <div class="resultado-btns" style="opacity:${r.status === 'fechada' ? '0.7' : '1'}">
+                                    <button class="${btn10}" onclick="confirmarResultado(${p.id}, '1-0', this)">1-0</button>
+                                    <button class="${btn05}" onclick="confirmarResultado(${p.id}, '0.5-0.5', this)">½-½</button>
+                                    <button class="${btn01}" onclick="confirmarResultado(${p.id}, '0-1', this)">0-1</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    partidasHtml = '<div class="empty-state" style="padding:16px;">Nenhuma partida nesta rodada.</div>';
+                }
+                html += `
+                    <div class="rodada-card">
+                        <div class="rodada-header" onclick="this.nextElementSibling.classList.toggle('open')">
+                            <span class="rodada-numero">Rodada ${r.numero || r.num_rodada || '?'}</span>
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <span class="rodada-status ${statusClass}">${statusLabel}</span>
+                                ${r.status === 'aberta' ? '<button class="btn btn-sm btn-success" onclick="event.stopPropagation(); confirmarFecharRodada(' + r.id + ')">Fechar Rodada</button>' : ''}
+                                ${r.status === 'fechada' ? '<button class="btn btn-sm btn-warning" onclick="event.stopPropagation(); reabrirRodada(' + r.id + ')">Reabrir</button>' : ''}
+                                <span style="color:#999;font-size:18px;">▾</span>
+                            </div>
+                        </div>
+                        <div class="rodada-body open">
+                            ${partidasHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('rodadasContent').innerHTML = html;
+        }
+
+        function confirmarResultado(partidaId, resultado, btnEl) {
+            apiPut('/api/torneios/rodadas/' + partidaId + '/resultado', { partida_id: partidaId, resultado: resultado })
+                .then(() => {
+                    mostrarToast('Resultado registrado!', 'success');
+                    if (document.querySelector('.tab-btn.active').dataset.tab === 'rodadas') carregarRodadas();
+                    if (document.querySelector('[data-tab="classificacao"]').classList.contains('active')) carregarClassificacao();
+                })
+                .catch(err => {
+                    mostrarToast('Erro ao registrar: ' + (err.message || 'Erro desconhecido'), 'error');
+                });
+        }
+
+        function confirmarFecharRodada(rodadaId) {
+            apiGet('/api/torneios/' + torneioId + '/rodadas')
+                .then(data => {
+                    const rodadas = data.rodadas || data || [];
+                    const rodada = rodadas.find(r => r.id === rodadaId);
+                    if (rodada && rodada.partidas) {
+                        const pendentes = rodada.partidas.filter(p => !p.resultado || p.resultado === '-');
+                        if (pendentes.length > 0) {
+                            if (!confirm('Ainda existem ' + pendentes.length + ' partida(s) sem resultado. Deseja fechar mesmo assim?')) return;
+                        }
+                    }
+                    fecharRodada(rodadaId);
+                })
+                .catch(() => fecharRodada(rodadaId));
+        }
+
+        function reabrirRodada(rodadaId) {
+            if (!confirm('Reabrir esta rodada para edicao de resultados?')) return;
+            apiPost('/api/torneios/rodadas/' + rodadaId + '/reabrir', {})
+                .then(function () {
+                    mostrarToast('Rodada reaberta!', 'success');
+                    carregarRodadas();
+                    carregarTorneio();
+                })
+                .catch(function (err) { mostrarToast('Erro: ' + (err.message || 'Erro desconhecido'), 'error'); });
+        }
+
+        function fecharRodada(rodadaId) {
+            apiPost('/api/torneios/rodadas/' + rodadaId + '/fechar', {})
+                .then(() => {
+                    mostrarToast('Rodada fechada com sucesso!', 'success');
+                    carregarRodadas();
+                    carregarTorneio();
+                })
+                .catch(err => mostrarToast('Erro ao fechar rodada: ' + (err.message || 'Erro desconhecido'), 'error'));
+        }
+
+        function carregarEstatisticas() {
+            mostrarLoading('estatisticasContent');
+            const promises = [
+                apiGet('/api/torneios/' + torneioId + '/participantes'),
+                apiGet('/api/torneios/' + torneioId + '/rodadas'),
+                apiGet('/api/torneios/' + torneioId + '/classificacao')
+            ];
+            Promise.all(promises)
+                .then(([partData, rodData, classData]) => {
+                    const participantes = partData.participantes || partData || [];
+                    const rodadas = rodData.rodadas || rodData || [];
+                    const classificacao = classData.classificacao || classData || [];
+                    renderEstatisticas(participantes, rodadas, classificacao);
+                })
+                .catch(err => {
+                    document.getElementById('estatisticasContent').innerHTML = '<div class="empty-state">Erro ao carregar estatísticas.</div>';
+                });
+        }
+
+        function renderEstatisticas(participantes, rodadas, classificacao) {
+            const totalParticipantes = participantes.length;
+            const totalRodadas = rodadas.length;
+
+            let totalPartidas = 0;
+            let somaPontuacao = 0;
+            let maiorPontuacao = 0;
+            let contribuintes = 0;
+            rodadas.forEach(r => {
+                if (r.partidas) {
+                    totalPartidas += r.partidas.length;
+                }
+            });
+            const pontuacaoCount = {};
+            classificacao.forEach(c => {
+                const pts = c.pontuacao != null ? c.pontuacao : 0;
+                somaPontuacao += pts;
+                contribuintes++;
+                if (pts > maiorPontuacao) maiorPontuacao = pts;
+                pontuacaoCount[pts] = (pontuacaoCount[pts] || 0) + 1;
+            });
+            const mediaPontuacao = contribuintes > 0 ? (somaPontuacao / contribuintes).toFixed(1) : 0;
+
+            const sortedScores = Object.keys(pontuacaoCount).map(Number).sort((a, b) => a - b);
+            const maxCount = Math.max(...Object.values(pontuacaoCount), 1);
+
+            let barrasHtml = '';
+            sortedScores.forEach(score => {
+                const count = pontuacaoCount[score];
+                const height = (count / maxCount) * 180;
+                barrasHtml += `
+                    <div class="barra-container">
+                        <div class="barra-valor">${count}</div>
+                        <div class="barra" style="height:${Math.max(height, 2)}px;"></div>
+                        <div class="barra-label">${score}</div>
+                    </div>
+                `;
+            });
+            if (!barrasHtml) {
+                barrasHtml = '<div class="empty-state" style="width:100%;padding:20px;">Sem dados de pontuação.</div>';
+            }
+
+            const top5 = [...classificacao].sort((a, b) => (b.pontuacao || 0) - (a.pontuacao || 0)).slice(0, 5);
+
+            let top5Html = '';
+            top5.forEach((c, i) => {
+                const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.';
+                top5Html += `
+                    <div class="participante-item">
+                        <div class="participante-info">
+                            <span style="font-size:18px;min-width:30px;">${medal}</span>
+                            <span class="nome">${escapeHtml(c.jogador_nome || c.nome || 'Desconhecido')}</span>
+                            <span class="turma">${escapeHtml(c.turma || c.jogador_turma || '')}</span>
+                        </div>
+                        <span class="pontuacao">${c.pontuacao || 0} pts</span>
+                    </div>
+                `;
+            });
+            if (!top5Html) top5Html = '<div class="empty-state">Nenhum dado disponível.</div>';
+
+            const html = `
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <div class="stat-value">${totalParticipantes}</div>
+                        <div class="stat-label">Total Participantes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalRodadas}</div>
+                        <div class="stat-label">Total Rodadas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${totalPartidas}</div>
+                        <div class="stat-label">Total Partidas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${mediaPontuacao}</div>
+                        <div class="stat-label">Média Pontuação</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${maiorPontuacao}</div>
+                        <div class="stat-label">Maior Pontuação</div>
+                    </div>
+                </div>
+                <h3>Distribuição de Pontuação</h3>
+                <div class="distribuicao-barras">${barrasHtml}</div>
+                <h3 style="margin-top:24px;">Top 5 Jogadores</h3>
+                <div>${top5Html}</div>
+            `;
+            document.getElementById('estatisticasContent').innerHTML = html;
+        }
+
+        function mostrarLoading(elementId) {
+            document.getElementById(elementId).innerHTML = '<div class="loading">Carregando...</div>';
+        }
+
+        function abrirModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+
+        function fecharModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.remove('open');
+            }
+        });
+
+        function mostrarToast(mensagem, tipo) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + (tipo || 'info');
+            toast.textContent = mensagem;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function formatarData(dataStr) {
+            if (!dataStr) return '';
+            const d = new Date(dataStr + (dataStr.includes('T') ? '' : 'T00:00:00'));
+            return d.toLocaleDateString('pt-BR');
+        }
+
+        function apiGet(url) { return window.apiRequest('GET', url); }
+        function apiPost(url, body) { return window.apiRequest('POST', url, body); }
+        function apiPut(url, body) { return window.apiRequest('PUT', url, body); }
+        function apiDelete(url) { return window.apiRequest('DELETE', url); }
+    </script>
+</body>
+</html>

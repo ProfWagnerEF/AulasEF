@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Público - Torneios de Xadrez</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .tournament-selector { margin-bottom: 24px; }
+    .tournament-selector select { max-width: 400px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .rodada-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+    .rodada-header:hover { background: var(--border); }
+    .rodada-header .rodada-numero { font-weight: 700; font-size: 1rem; }
+    .rodada-header .rodada-status { font-size: 0.85rem; color: var(--text-muted); }
+    .rodada-header .toggle-icon { font-size: 1.2rem; transition: transform 0.3s ease; }
+    .rodada-header.open .toggle-icon { transform: rotate(90deg); }
+    .rodada-partidas { display: none; padding: 8px 0; }
+    .rodada-partidas.open { display: block; }
+    .auto-refresh-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .auto-refresh-indicator .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .page-header .subtitle { font-size: 0.9rem; color: var(--text-muted); margin-top: 4px; }
+    .empty-tab { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+    .empty-tab .icon { font-size: 2.5rem; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-logo">
+        <span class="icon">♟</span>
+        <span>Xadrez Escolar</span>
+      </div>
+      <nav class="header-nav"></nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top: 24px; padding-bottom: 24px;">
+    <div class="page-header">
+      <div>
+        <h1>Painel Público</h1>
+        <div class="subtitle">Acompanhe os torneios em tempo real</div>
+      </div>
+      <div class="auto-refresh-indicator">
+        <span class="dot"></span>
+        <span>Atualização automática a cada 30s</span>
+      </div>
+    </div>
+
+    <div class="tournament-selector">
+      <div class="form-group">
+        <label for="torneio-select">Selecione o Torneio</label>
+        <select id="torneio-select" class="form-control">
+          <option value="">— Carregando torneios… —</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <div id="painel-content" style="display:none;">
+      <div class="tabs" id="tabs-container">
+        <button class="tab active" data-tab="classificacao">Classificação</button>
+        <button class="tab" data-tab="rodada-atual">Rodada Atual</button>
+        <button class="tab" data-tab="todas-rodadas">Todas as Rodadas</button>
+        <button class="tab" data-tab="estatisticas">Estatísticas</button>
+      </div>
+
+      <div id="tab-classificacao" class="tab-content active"></div>
+      <div id="tab-rodada-atual" class="tab-content"></div>
+      <div id="tab-todas-rodadas" class="tab-content"></div>
+      <div id="tab-estatisticas" class="tab-content"></div>
+    </div>
+
+    <div id="loading-message" class="loading">Carregando dados do torneio</div>
+    <div id="empty-message" class="empty-state" style="display:none;">
+      <div class="icon">🏆</div>
+      <p>Selecione um torneio para visualizar as informações.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>Sistema de Gerenciamento de Torneios de Xadrez Escolar &copy; <span id="year"></span></p>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    let currentData = null;
+    let currentTournamentId = null;
+    let refreshInterval = null;
+    let isLoading = false;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
+      initHeader();
+      initFullscreenBtn();
+      document.getElementById('year').textContent = new Date().getFullYear();
+
+      setupTabs();
+      await loadTournaments();
+    });
+
+    function setupTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+          const target = document.getElementById('tab-' + tab.dataset.tab);
+          if (target) target.classList.add('active');
+        });
+      });
+    }
+
+    async function loadTournaments() {
+      const select = document.getElementById('torneio-select');
+      select.disabled = true;
+
+      try {
+        const torneios = await API.get('/torneios/publico');
+        select.innerHTML = '<option value="">— Selecione um torneio —</option>';
+
+        if (!torneios || torneios.length === 0) {
+          select.innerHTML += '<option value="" disabled>Nenhum torneio disponível</option>';
+          showEmpty('Nenhum torneio ativo no momento.');
+          return;
+        }
+
+        torneios.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t.id;
+          opt.textContent = t.nome + (t.data ? ' (' + formatDate(t.data) + ')' : '');
+          select.appendChild(opt);
+        });
+
+        select.addEventListener('change', () => {
+          const id = select.value;
+          if (id) {
+            selectTournament(id);
+          } else {
+            clearTournament();
+          }
+        });
+
+        if (torneios.length === 1) {
+          select.value = torneios[0].id;
+          await selectTournament(torneios[0].id);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar torneios:', err);
+        select.innerHTML = '<option value="">— Erro ao carregar —</option>';
+        mostrarAlerta('Erro ao carregar torneios: ' + err.message, 'danger');
+      } finally {
+        select.disabled = false;
+      }
+    }
+
+    async function selectTournament(id) {
+      if (isLoading) return;
+      isLoading = true;
+      currentTournamentId = id;
+
+      document.getElementById('painel-content').style.display = 'none';
+      document.getElementById('loading-message').style.display = 'flex';
+      document.getElementById('empty-message').style.display = 'none';
+
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+
+      try {
+        const data = await API.get('/torneios/publico/' + id);
+        currentData = data;
+        renderAll(data);
+        document.getElementById('painel-content').style.display = 'block';
+        document.getElementById('loading-message').style.display = 'none';
+
+        refreshInterval = setInterval(async () => {
+          try {
+            const fresh = await API.get('/torneios/publico/' + currentTournamentId);
+            currentData = fresh;
+            renderAll(fresh);
+          } catch (e) {
+            console.warn('Auto-refresh error:', e);
+          }
+        }, 30000);
+      } catch (err) {
+        console.error('Erro ao carregar torneio:', err);
+        document.getElementById('loading-message').style.display = 'none';
+        showEmpty('Erro ao carregar dados do torneio: ' + err.message);
+        mostrarAlerta('Erro ao carregar dados', 'danger');
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    function clearTournament() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+        refreshInterval = null;
+      }
+      currentTournamentId = null;
+      currentData = null;
+      document.getElementById('painel-content').style.display = 'none';
+      document.getElementById('loading-message').style.display = 'none';
+      showEmpty('Selecione um torneio para visualizar as informações.');
+    }
+
+    function showEmpty(msg) {
+      const empty = document.getElementById('empty-message');
+      empty.style.display = 'block';
+      empty.querySelector('p').textContent = msg;
+    }
+
+    function renderAll(data) {
+      renderClassificacao(data);
+      renderRodadaAtual(data);
+      renderRodadas(data);
+      renderEstatisticas(data);
+    }
+
+    function renderClassificacao(data) {
+      const container = document.getElementById('tab-classificacao');
+      const classif = data.classificacao;
+
+      if (!classif || classif.length === 0) {
+        container.innerHTML = '<div class="empty-tab"><div class="icon">📋</div><p>Classificação ainda não disponível.</p></div>';
+        return;
+      }
+
+      let html = '<div class="table-container"><table>';
+      html += '<thead><tr>';
+      html += '<th>#</th><th>Jogador</th><th>Turma</th><th>Pontuação</th><th>Vitórias</th><th>Empates</th><th>Derrotas</th><th>Buchholz</th><th>Sonneborn</th>';
+      html += '</tr></thead><tbody>';
+
+      classif.forEach((p, i) => {
+        const pos = i + 1;
+        html += '<tr>';
+        html += '<td>' + renderPosicao(pos) + '</td>';
+        html += '<td><strong>' + escapeHTML(p.nome_completo || p.nome || 'Jogador #' + p.jogador_id) + '</strong></td>';
+        html += '<td>' + escapeHTML(p.turma_nome || p.turma || '-') + '</td>';
+        html += '<td><strong>' + (p.pontuacao != null ? p.pontuacao.toFixed(1) : '0.0') + '</strong></td>';
+        html += '<td>' + (p.vitorias != null ? p.vitorias : '0') + '</td>';
+        html += '<td>' + (p.empates != null ? p.empates : '0') + '</td>';
+        html += '<td>' + (p.derrotas != null ? p.derrotas : '0') + '</td>';
+        html += '<td>' + (p.buchholz != null ? p.buchholz.toFixed(1) : '0.0') + '</td>';
+        html += '<td>' + (p.sonneborn != null ? p.sonneborn.toFixed(1) : '0.0') + '</td>';
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      container.innerHTML = html;
+    }
+
+    function renderRodadaAtual(data) {
+      const container = document.getElementById('tab-rodada-atual');
+      const rodadas = data.rodadas;
+
+      if (!rodadas || rodadas.length === 0) {
+        container.innerHTML = '<div class="empty-tab"><div class="icon">🏁</div><p>Nenhuma rodada disponível.</p></div>';
+        return;
+      }
+
+      const abertas = rodadas.filter(r => r.status === 'aberta');
+      const rodada = abertas.length > 0 ? abertas[abertas.length - 1] : rodadas[rodadas.length - 1];
+      const partidas = rodada.partidas || [];
+
+      if (partidas.length === 0) {
+        container.innerHTML = '<div class="empty-tab"><div class="icon">🏁</div><p>Nenhuma partida na ' + rodada.numero + 'ª rodada.</p></div>';
+        return;
+      }
+
+      let html = '<div class="card" style="margin-bottom:16px;">';
+      html += '<div class="card-header">';
+      html += '<h3>' + rodada.numero + 'ª Rodada' + (rodada.status === 'aberta' ? ' <span class="badge badge-ativo">Em andamento</span>' : ' <span class="badge badge-classificatorio">Encerrada</span>') + '</h3>';
+      html += '<span>' + partidas.length + ' partida' + (partidas.length !== 1 ? 's' : '') + '</span>';
+      html += '</div>';
+
+      partidas.forEach(p => {
+        const resultado = p.resultado && p.resultado !== '*' ? p.resultado : '-';
+        html += '<div class="match-card">';
+        html += '<span class="mesa-badge">' + p.mesa + '</span>';
+        html += '<span class="player">' + escapeHTML(p.nome_brancas || 'Brancas') + '</span>';
+        html += '<span class="resultado-display">' + resultado + '</span>';
+        html += '<span class="player">' + escapeHTML(p.nome_pretas || 'Pretas') + '</span>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function renderRodadas(data) {
+      const container = document.getElementById('tab-todas-rodadas');
+      const rodadas = data.rodadas;
+
+      if (!rodadas || rodadas.length === 0) {
+        container.innerHTML = '<div class="empty-tab"><div class="icon">📜</div><p>Nenhuma rodada registrada.</p></div>';
+        return;
+      }
+
+      let html = '';
+      rodadas.forEach((r, idx) => {
+        const partidas = r.partidas || [];
+        const statusLabel = r.status === 'aberta' ? '<span class="badge badge-ativo">Em andamento</span>' : '<span class="badge badge-classificatorio">Encerrada</span>';
+        const isFirst = idx === 0;
+
+        html += '<div class="rodada-item" style="margin-bottom:8px;">';
+        html += '<div class="rodada-header' + (isFirst ? ' open' : '') + '" onclick="toggleRodada(this)">';
+        html += '<div>';
+        html += '<span class="rodada-numero">' + r.numero + 'ª Rodada</span> ';
+        html += statusLabel;
+        html += '</div>';
+        html += '<div>';
+        html += '<span class="rodada-status">' + partidas.length + ' partida' + (partidas.length !== 1 ? 's' : '') + '</span>';
+        html += '<span class="toggle-icon">▶</span>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '<div class="rodada-partidas' + (isFirst ? ' open' : '') + '">';
+
+        if (partidas.length === 0) {
+          html += '<div class="empty-tab" style="padding:16px;"><p>Nenhuma partida nesta rodada.</p></div>';
+        } else {
+          partidas.forEach(p => {
+            const resultado = p.resultado && p.resultado !== '*' ? p.resultado : '-';
+            html += '<div class="match-card" style="margin-left:8px;">';
+            html += '<span class="mesa-badge">' + p.mesa + '</span>';
+            html += '<span class="player">' + escapeHTML(p.nome_brancas || 'Brancas') + '</span>';
+            html += '<span class="resultado-display">' + resultado + '</span>';
+            html += '<span class="player">' + escapeHTML(p.nome_pretas || 'Pretas') + '</span>';
+            html += '</div>';
+          });
+        }
+
+        html += '</div></div>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    function toggleRodada(el) {
+      el.classList.toggle('open');
+      const partidas = el.nextElementSibling;
+      if (partidas) partidas.classList.toggle('open');
+    }
+
+    function renderEstatisticas(data) {
+      const container = document.getElementById('tab-estatisticas');
+      const classif = data.classificacao || [];
+      const rodadas = data.rodadas || [];
+
+      let totalParticipantes = classif.length;
+      let totalPartidas = 0;
+      rodadas.forEach(r => {
+        if (r.partidas) totalPartidas += r.partidas.length;
+      });
+
+      const pontuacoes = classif.map(p => p.pontuacao || 0);
+      const soma = pontuacoes.reduce((a, b) => a + b, 0);
+      const media = totalParticipantes > 0 ? (soma / totalParticipantes) : 0;
+      const maior = totalParticipantes > 0 ? Math.max(...pontuacoes) : 0;
+      const topScorer = totalParticipantes > 0 ? classif[0] : null;
+
+      let html = '<div class="grid grid-4" style="margin-bottom:24px;">';
+
+      html += '<div class="card stat-card">';
+      html += '<div class="stat-value">' + totalParticipantes + '</div>';
+      html += '<div class="stat-label">Participantes</div>';
+      html += '</div>';
+
+      html += '<div class="card stat-card">';
+      html += '<div class="stat-value">' + totalPartidas + '</div>';
+      html += '<div class="stat-label">Total de Partidas</div>';
+      html += '</div>';
+
+      html += '<div class="card stat-card">';
+      html += '<div class="stat-value">' + media.toFixed(2) + '</div>';
+      html += '<div class="stat-label">Pontuação Média</div>';
+      html += '</div>';
+
+      html += '<div class="card stat-card">';
+      html += '<div class="stat-value">' + maior.toFixed(1) + '</div>';
+      html += '<div class="stat-label">Maior Pontuação' + (topScorer ? ' (' + escapeHTML(topScorer.nome_completo || topScorer.nome || '') + ')' : '') + '</div>';
+      html += '</div>';
+
+      html += '</div>';
+
+      html += '<div class="card">';
+      html += '<div class="card-header"><h3>Partidas por Rodada</h3></div>';
+
+      if (rodadas.length === 0) {
+        html += '<div class="empty-tab"><p>Nenhuma rodada disponível.</p></div>';
+      } else {
+        html += '<div class="table-container"><table>';
+        html += '<thead><tr><th>Rodada</th><th>Status</th><th>Partidas</th></tr></thead><tbody>';
+        rodadas.forEach(r => {
+          const qtd = (r.partidas || []).length;
+          const statusLabel = r.status === 'aberta' ? '<span class="badge badge-ativo">Em andamento</span>' : '<span class="badge badge-classificatorio">Encerrada</span>';
+          html += '<tr>';
+          html += '<td><strong>' + r.numero + 'ª Rodada</strong></td>';
+          html += '<td>' + statusLabel + '</td>';
+          html += '<td>' + qtd + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+
+      html += '</div>';
+
+      if (totalParticipantes > 0 && rodadas.length > 0) {
+        const maxPartidasRodada = Math.max(...rodadas.map(r => (r.partidas || []).length), 1);
+        html += '<div class="card" style="margin-top:16px;">';
+        html += '<div class="card-header"><h3>Progresso das Rodadas</h3></div>';
+        rodadas.forEach(r => {
+          const qtd = (r.partidas || []).length;
+          const pct = Math.round((qtd / maxPartidasRodada) * 100);
+          html += '<div style="margin-bottom:12px;">';
+          html += '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">';
+          html += '<span>' + r.numero + 'ª Rodada</span>';
+          html += '<span>' + qtd + ' partida' + (qtd !== 1 ? 's' : '') + '</span>';
+          html += '</div>';
+          html += '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%;"></div></div>';
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Torneio de Xadrez Escolar</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header id="mainHeader"></header>
+
+    <main class="container" style="padding-top:24px">
+        <div class="page-header">
+            <h1>I Torneio de Xadrez Escolar</h1>
+            <p class="subtitle">Sistema de Gerenciamento de Torneios</p>
+        </div>
+
+        <section class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <h3>Torneios Ativos</h3>
+                <p class="stat-value" id="torneios-ativos">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Jogadores</h3>
+                <p class="stat-value" id="jogadores-cadastrados">-</p>
+            </div>
+            <div class="stat-card">
+                <h3>Partidas</h3>
+                <p class="stat-value" id="partidas-realizadas">-</p>
+            </div>
+        </section>
+
+        <div class="card" style="padding:20px;margin-bottom:20px">
+            <h2 style="margin-top:0">Acesso Rápido</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <a href="pages/admin-dashboard.html" class="btn btn-primary">Dashboard Admin</a>
+                <a href="pages/admin-turmas.html" class="btn btn-primary">Turmas</a>
+                <a href="pages/admin-jogadores.html" class="btn btn-primary">Jogadores</a>
+                <a href="pages/admin-torneios.html" class="btn btn-primary">Torneios</a>
+                <a href="pages/admin-usuarios.html" class="btn btn-primary">Usuários</a>
+                <a href="pages/painel-publico.html" class="btn btn-secondary">Painel Público</a>
+                <a href="login.html" class="btn btn-secondary">Login</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            initTheme();
+            initHeader();
+            API.get('/dashboard').then(function (d) {
+                if (document.getElementById('torneios-ativos')) document.getElementById('torneios-ativos').textContent = d.total_torneios_ativos || 0;
+                if (document.getElementById('jogadores-cadastrados')) document.getElementById('jogadores-cadastrados').textContent = d.total_jogadores || 0;
+                if (document.getElementById('partidas-realizadas')) document.getElementById('partidas-realizadas').textContent = d.total_partidas || 0;
+            }).catch(function () {});
+        });
+    </script>
+</body>
+</html>
