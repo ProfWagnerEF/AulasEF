@@ -141,18 +141,26 @@ async function handleLogout() {
 }
 
 function verificarAuth(perfilNecessario) {
-  var token = localStorage.getItem('xadrez_token');
-  var usuario = (function() { try { return JSON.parse(localStorage.getItem('xadrez_usuario')); } catch(e) { return null; } })();
-  if (!token || !usuario) {
-    window.location.href = relPath('login.html') + '?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
-    return false;
+  function check() {
+    var token = localStorage.getItem('xadrez_token');
+    var usuario = (function() { try { return JSON.parse(localStorage.getItem('xadrez_usuario')); } catch(e) { return null; } })();
+    if (!token || !usuario) {
+      window.location.href = relPath('login.html') + '?redirect=' + encodeURIComponent(window.location.pathname + window.location.search);
+      return false;
+    }
+    if (perfilNecessario === 'admin' && usuario.perfil !== 'admin') {
+      mostrarToast('Acesso restrito a administradores', 'error');
+      window.location.href = relPath('pages/admin-dashboard.html');
+      return false;
+    }
+    return true;
   }
-  if (perfilNecessario === 'admin' && usuario.perfil !== 'admin') {
-    mostrarToast('Acesso restrito a administradores', 'error');
-    window.location.href = relPath('pages/admin-dashboard.html');
-    return false;
-  }
-  return true;
+
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) { check(); }
+  });
+
+  return check();
 }
 
 function renderBadge(tipo, valor) {

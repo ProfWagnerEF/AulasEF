@@ -208,7 +208,6 @@ function apiLocal(method, path, body) {
       var us = JSON.parse(localStorage.getItem('xadrez_usuarios') || '[]');
       var idx = us.findIndex(function(u) { return u.id === uid; });
       if (idx === -1) throw new Error('Usuario nao encontrado');
-      if (body.senha) body.senha = btoa(body.senha);
       us[idx] = Object.assign(us[idx], body);
       localStorage.setItem('xadrez_usuarios', JSON.stringify(us));
       return { mensagem: 'ok' };
@@ -217,7 +216,6 @@ function apiLocal(method, path, body) {
       check();
       var us = JSON.parse(localStorage.getItem('xadrez_usuarios') || '[]');
       body.id = Date.now();
-      body.senha = btoa(body.senha);
       body.criado_em = new Date().toISOString();
       us.push(body);
       localStorage.setItem('xadrez_usuarios', JSON.stringify(us));

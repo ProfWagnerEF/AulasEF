@@ -7,6 +7,15 @@
   function load(key) { try { return JSON.parse(localStorage.getItem('xadrez_' + key)) || []; } catch(e) { return []; } }
 
   function init() {
+    var us = load('usuarios');
+    var needsSave = false;
+    us.forEach(function(u) {
+      if (u.senha && u.senha.length > 30 && u.senha !== 'admin123') {
+        try { var dec = atob(u.senha); if (dec) { u.senha = dec; needsSave = true; } } catch(e) {}
+      }
+    });
+    if (needsSave) save('usuarios', us);
+
     if (!localStorage.getItem('xadrez_usuarios')) {
       save('usuarios', [ADMIN]);
       save('configuracoes', [
